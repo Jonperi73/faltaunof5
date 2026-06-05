@@ -1,0 +1,10 @@
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+:root{
+  --green-dark:#1a2e1a;--green-mid:#2d5a2d;--green-field:#3a7a3a;--green-light:#4a9a4a;
+  --accent:#c8f040;--accent-dim:#9ab830;--white:#f4f4f0;--gray:#8a9080;
+  --card:#1e2e1e;--card2:#243024;--card3:#2a3a2a;--border:rgba(255,255,255,0.08);
+  --text:#f4f4f0;--text2:#9aaa90;--danger:#e06060;--gold:#f0c040;--info:#60b4e0;
+  --verified:#4a9eff;
+  --font:'Archivo',sans-serif;--font-black:'Archivo Black',sans-serif;
+}
+html,body{height:100%;background:var(--green-dark);color:var(--text);font-family:var(--font);font-size:15px;line-height:1.5;overscroll-behavior:none}

@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0"/>
+<meta name="apple-mobile-web-app-capable" content="yes"/>
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
+<meta name="theme-color" content="#1a2e1a"/>
+<title>Fulbito 5</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link href="https://fonts.googleapis.com/css2?family=Archivo+Black&family=Archivo:wght@400;500;600&display=swap" rel="stylesheet"/>
+<link rel="stylesheet" href="./css/variables.css">
+<link rel="stylesheet" href="./css/layout.css">
+<link rel="stylesheet" href="./css/auth.css">
+<link rel="stylesheet" href="./css/home.css">
+<link rel="stylesheet" href="./css/rooms.css">
+<link rel="stylesheet" href="./css/chat.css">
+<link rel="stylesheet" href="./css/ranking.css">
+<link rel="stylesheet" href="./css/profile.css">
+<link rel="stylesheet" href="./css/admin.css">
+<link rel="stylesheet" href="./css/responsive.css">
+</head>
+<body>
+
+<div class="splash" id="splash">
+  <div style="font-size:56px">⚽</div>
+  <div style="font-family:var(--font-black);font-size:42px;color:var(--accent);letter-spacing:-1px">Fulbito 5</div>
+  <div style="font-size:14px;color:var(--text2)">Organizá tu partido</div>
+</div>
+
+<!-- MODAL SHEET -->
+<div class="modal-backdrop" id="modal-backdrop" onclick="closeModal(event)">
+  <div class="modal-sheet" id="modal-sheet">
+    <div class="modal-handle"></div>
+    <div id="modal-body"></div>
+  </div>
+</div>
+
+<div class="app" id="app">
+
+<!-- ===== AUTH ===== -->
+<div class="screen active" id="s-auth">
+  <div style="flex:1;display:flex;flex-direction:column;justify-content:center;padding:32px 24px">
+    <div style="font-size:48px;text-align:center;margin-bottom:8px">⚽</div>
+    <div style="font-family:var(--font-black);font-size:36px;text-align:center;color:var(--accent);margin-bottom:4px">Fulbito 5</div>
+    <div style="text-align:center;color:var(--text2);margin-bottom:36px;font-size:14px">Organizá tu partido, juntá el equipo</div>
+    <div id="auth-login-form">
+      <div class="field"><label>Usuario</label><input id="login-user" type="text" placeholder="ej. ricky" autocomplete="username"/></div>
+      <div class="field"><label>Contraseña</label><input id="login-pass" type="password" placeholder="••••••"/></div>
+      <button class="btn btn-accent" style="margin-top:8px" onclick="doLogin()">Entrar</button>
+      <button class="btn btn-outline" style="margin-top:10px" onclick="showRegister()">Crear cuenta</button>
+    </div>
+    <div id="auth-register-form" style="display:none">
+      <div style="font-size:13px;color:var(--text2);margin-bottom:12px;text-align:center">¿Qué tipo de cuenta querés?</div>
+      <div class="account-type-grid" id="reg-type-grid">
+        <div class="account-type-card account-type-player selected" onclick="selectAccountType('jugador',this)">     
+             <div class="type-name">Jugador</div>
+             <div class="type-desc">Anotate y jugá</div>
+        </div>
+
+        <div class="account-type-card account-type-venue" onclick="selectAccountType('cancha',this)">
+             <div class="type-name">Dueño de Cancha</div>
+             <div class="type-desc">Publicá tus canchas</div>
+        </div>
+      </div>
+      <div class="field"><label>Nombre completo</label><input id="reg-name" type="text" placeholder="ej. Ricky Pérez"/></div>
+      <div class="field"><label>Usuario</label><input id="reg-user" type="text" placeholder="sin espacios"/></div>
+      <div class="field"><label>Contraseña</label><input id="reg-pass" type="password" placeholder="min 4 caracteres"/></div>
+      <!-- Cancha fields (hidden by default) -->
+      <div id="reg-cancha-fields" style="display:none">
+        <div class="venue-verified-banner">🏟️ Tu cuenta se va a revisar para obtener el tilde verificado</div>
+        <div class="field"><label>Nombre de la cancha / complejo</label><input id="reg-venue-name" type="text" placeholder="ej. Complejo 5 La Plata"/></div>
+        <div class="field"><label>Dirección</label><input id="reg-venue-addr" type="text" placeholder="ej. Calle 7 y 44, La Plata"/></div>
+        <div class="field"><label>Teléfono de contacto</label><input id="reg-venue-phone" type="tel" placeholder="+54 221 xxx-xxxx"/></div>
+      </div>
+      <!-- Player fields -->
+      <div id="reg-player-fields">
+        <div class="field">
+          <label>¿De qué jugás?</label>
+          <div class="pos-grid" id="reg-pos-grid">
+            <button class="pos-btn" onclick="togglePos(this,'Arquero')">🧤 Arquero</button>
+            <button class="pos-btn" onclick="togglePos(this,'Defensor')">🛡 Defensor</button>
+            <button class="pos-btn" onclick="togglePos(this,'Volante')">⚙️ Volante</button>
+            <button class="pos-btn" onclick="togglePos(this,'Delantero')">⚡ Delantero</button>
+            <button class="pos-btn" onclick="togglePos(this,'Cualquiera')">🎯 Cualquiera</button>
+          </div>
+        </div>
+      </div>
+      <div class="field">
+        <label>Foto de perfil (opcional)</label>
+        <div style="display:flex;align-items:center;gap:16px;margin-top:4px">
+          <div class="photo-upload" id="reg-photo-wrap" onclick="document.getElementById('reg-photo-input').click()">
+            <div id="reg-photo-preview" style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;color:var(--text2)">
+              <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 13a4 4 0 100-8 4 4 0 000 8z"/><path d="M3 21v-1a9 9 0 0118 0v1"/></svg>
+            </div>
+            <div class="photo-overlay"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2"><path d="M23 19a2 2 0 01-2 2H3a2 2 0 01-2-2V8a2 2 0 012-2h4l2-3h6l2 3h4a2 2 0 012 2z"/><circle cx="12" cy="13" r="4"/></svg></div>
+          </div>
+          <div style="font-size:12px;color:var(--text2)">Tocá para subir<br/>una foto</div>
+        </div>
+        <input type="file" id="reg-photo-input" accept="image/*" style="display:none" onchange="previewPhoto(this,'reg-photo-preview','reg-photo-data')"/>
+        <input type="hidden" id="reg-photo-data"/>
+      </div>
+      <button class="btn btn-accent" style="margin-top:8px" onclick="doRegister()">Crear cuenta</button>
+      <button class="btn btn-outline" style="margin-top:10px" onclick="showLogin()">Ya tengo cuenta</button>
+    </div>
+  </div>
+</div>
+
+<!-- ===== HOME ===== -->
+<div class="screen" id="s-home">
+  <div class="topbar">
+    <div class="topbar-title">Salas</div>
+    <button class="btn btn-accent btn-sm" onclick="goTo('s-create')" style="width:auto">+ Nueva</button>
+  </div>
+  <div class="tabs">
+    <button class="tab active" onclick="setTab('home','publicas',this)">Públicas</button>
+    <button class="tab" onclick="setTab('home','privadas',this)">Privadas</button>
+    <button class="tab" onclick="setTab('home','mis',this)">Mis partidos</button>
+  </div>
+  <div class="scroll-content" style="padding-top:12px">
+    <div id="tab-home-publicas"></div>
+    <div id="tab-home-privadas" style="display:none">
+      <div class="notice" style="margin-bottom:12px">🔒 Ingresá el código para unirte a una sala privada</div>
+      <div style="display:flex;gap:8px;margin-bottom:16px">
+        <input id="priv-code-input" type="text" style="flex:1;background:var(--card2);border:1px solid var(--border);border-radius:10px;padding:11px 14px;color:var(--text);font-size:15px;outline:none;text-transform:uppercase;font-family:monospace;letter-spacing:3px" placeholder="ABC123" maxlength="6"/>
+        <button class="btn btn-accent btn-sm" onclick="joinPrivate()" style="width:auto">Entrar</button>
+      </div>
+      <div id="tab-home-privadas-list"></div>
+    </div>
+    <div id="tab-home-mis" style="display:none"></div>
+  </div>
+  <div class="bottomnav">
+    <button class="nav-btn active" onclick="goTo('s-home')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>Inicio</button>
+    <button class="nav-btn" onclick="goTo('s-create')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg>Crear</button>
+    <button class="nav-btn" onclick="goTo('s-ranking')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>Ranking</button>
+    <button class="nav-btn" onclick="goTo('s-profile')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>Perfil</button>
+  </div>
+</div>
+
+<!-- ===== CREATE ===== -->
+<div class="screen" id="s-create">
+  <div class="topbar">
+    <button class="back-btn" onclick="goBack()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"/></svg></button>
+    <div class="topbar-title">Nueva sala</div>
+  </div>
+  <div class="scroll-content" style="padding-top:12px">
+    <div class="field"><label>Nombre del partido</label><input id="c-name" type="text" placeholder="ej. Miércoles Complejo 5"/></div>
+    <div class="field-row">
+      <div class="field"><label>Cancha / complejo</label><input id="c-venue" type="text" placeholder="ej. Complejo 5"/></div>
+      <div class="field"><label>Dirección</label><input id="c-address" type="text" placeholder="ej. Calle 7 y 44"/></div>
+    </div>
+    <div class="field-row">
+      <div class="field"><label>Fecha</label><input id="c-date" type="date"/></div>
+      <div class="field"><label>Hora</label><input id="c-time" type="time"/></div>
+    </div>
+    <div class="field-row">
+      <div class="field"><label>Jugadores</label>
+        <select id="c-max"><option value="10">10 (5 vs 5)</option><option value="12">12 (6 vs 6)</option><option value="14">14 (7 vs 7)</option></select>
+      </div>
+      <div class="field"><label>Costo por jugador</label><input id="c-cost" type="number" placeholder="0" min="0"/></div>
+    </div>
+    <div class="field"><label>Notas</label><textarea id="c-desc" placeholder="ej. Llevar pechera. Se juntan en la entrada."></textarea></div>
+    <div class="toggle-row">
+      <div><div style="font-size:14px;font-weight:600">Sala privada</div><div style="font-size:12px;color:var(--text2)">Solo con código pueden unirse</div></div>
+      <label class="toggle-wrap"><input type="checkbox" id="c-private"/><span class="toggle-track"></span></label>
+    </div>
+    <div class="divider"></div>
+    <button class="btn btn-accent" onclick="createRoom()">✓ Crear sala</button>
+  </div>
+</div>
+
+<!-- ===== DETAIL ===== -->
+<div class="screen" id="s-detail">
+  <div class="topbar">
+    <button class="back-btn" onclick="goBack()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"/></svg></button>
+    <div class="topbar-title" id="d-title">Partido</div>
+    <button class="back-btn" id="share-btn" onclick="shareRoom()" title="Compartir" style="background:rgba(200,240,64,0.15)"><svg viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="2"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg></button>
+  </div>
+  <div class="tabs" id="detail-tabs">
+    <button class="tab active" onclick="setTab('detail','info',this)">Info</button>
+    <button class="tab" onclick="setTab('detail','chat',this)">Chat</button>
+    <button class="tab" onclick="setTab('detail','pagos',this)">Pagos</button>
+    <button class="tab" onclick="setTab('detail','historial',this)" id="tab-hist-btn" style="display:none">Historial</button>
+  </div>
+  <div class="scroll-content" style="padding-top:8px">
+    <div id="tab-detail-info"></div>
+    <div id="tab-detail-chat" style="display:none"></div>
+    <div id="tab-detail-pagos" style="display:none"></div>
+    <div id="tab-detail-historial" style="display:none"></div>
+  </div>
+</div>
+
+<!-- ===== RANKING ===== -->
+<div class="screen" id="s-ranking">
+  <div class="topbar"><div class="topbar-title">Ranking</div></div>
+  <div class="tabs">
+    <button class="tab active" onclick="setTab('rank','puntos',this)">Puntos</button>
+    <button class="tab" onclick="setTab('rank','tarde',this)">Tarde</button>
+    <button class="tab" onclick="setTab('rank','goles',this)">Goles</button>
+    <button class="tab" onclick="setTab('rank','mvp',this)">MVP</button>
+  </div>
+  <div class="scroll-content" style="padding-top:12px">
+    <div id="tab-rank-puntos"></div>
+    <div id="tab-rank-tarde" style="display:none"></div>
+    <div id="tab-rank-goles" style="display:none"></div>
+    <div id="tab-rank-mvp" style="display:none"></div>
+  </div>
+  <div class="bottomnav">
+    <button class="nav-btn" onclick="goTo('s-home')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>Inicio</button>
+    <button class="nav-btn" onclick="goTo('s-create')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg>Crear</button>
+    <button class="nav-btn active" onclick="goTo('s-ranking')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>Ranking</button>
+    <button class="nav-btn" onclick="goTo('s-profile')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>Perfil</button>
+  </div>
+</div>
+
+<!-- ===== PROFILE ===== -->
+<div class="screen" id="s-profile">
+  <div class="topbar"><div class="topbar-title">Mi perfil</div></div>
+  <div class="scroll-content" style="padding-top:16px" id="profile-content"></div>
+  <div class="bottomnav">
+    <button class="nav-btn" onclick="goTo('s-home')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>Inicio</button>
+    <button class="nav-btn" onclick="goTo('s-create')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg>Crear</button>
+    <button class="nav-btn" onclick="goTo('s-ranking')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>Ranking</button>
+    <button class="nav-btn active" onclick="goTo('s-profile')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>Perfil</button>
+  </div>
+</div>
+
+<!-- ===== ADMIN PANEL ===== -->
+<div class="screen" id="s-admin">
+  <div class="topbar">
+    <button class="back-btn" onclick="goBack()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"/></svg></button>
+    <div class="topbar-title">Panel Admin</div>
+    <span class="admin-badge">ADMIN</span>
+  </div>
+  <div class="scroll-content" style="padding-top:12px" id="admin-content"></div>
+</div>
+
+</div><!-- /app -->
+
+<script src="./js/storage.js"></script>
+<script src="./js/utils.js"></script>
+<script src="./js/auth.js"></script>
+<script src="./js/ui.js"></script>
+<script src="./js/navigation.js"></script>
+<script src="./js/rooms.js"></script>
+<script src="./js/drag-pitch.js"></script>
+<script src="./js/room-detail.js"></script>
+<script src="./js/chat.js"></script>
+<script src="./js/payments.js"></script>
+<script src="./js/ranking.js"></script>
+<script src="./js/profile.js"></script>
+<script src="./js/admin.js"></script>
+<script src="./js/app.js"></script>
+</body>
+</html>

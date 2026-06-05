@@ -1,0 +1,37 @@
+.player-chip{display:flex;align-items:center;gap:8px;padding:8px 12px;background:var(--card2);border-radius:10px;border:1px solid var(--border)}
+.player-chips{display:flex;flex-direction:column;gap:6px}
+.code-box{background:var(--card2);border:1px solid var(--border);border-radius:10px;padding:12px 16px;font-family:monospace;font-size:22px;letter-spacing:4px;text-align:center;color:var(--accent);font-weight:700}
+/* QUICK MSGS */
+.quick-msgs{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px}
+.qmsg{padding:6px 12px;border-radius:99px;background:var(--card2);border:1px solid var(--border);color:var(--text2);font-size:12px;cursor:pointer;transition:all 0.15s;white-space:nowrap}
+.qmsg:hover{border-color:var(--accent);color:var(--accent)}
+/* CONFIRM SYSTEM */
+.confirm-row{display:flex;gap:6px;margin-top:6px}
+.cstate-btn{flex:1;padding:6px 4px;border-radius:8px;border:1px solid var(--border);background:var(--card2);color:var(--text2);font-size:11px;font-weight:600;cursor:pointer;text-align:center;transition:all 0.2s}
+.cstate-btn.active-yes{background:rgba(200,240,64,0.2);border-color:var(--accent);color:var(--accent)}
+.cstate-btn.active-maybe{background:rgba(240,192,64,0.15);border-color:var(--gold);color:var(--gold)}
+.cstate-btn.active-no{background:rgba(224,96,96,0.15);border-color:var(--danger);color:var(--danger)}
+/* PAYMENTS */
+.pay-row{display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid var(--border)}
+/* HISTORY timeline */
+.hist-item{display:flex;gap:12px;padding:10px 0;border-bottom:1px solid var(--border)}
+.hist-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0;margin-top:5px}
+/* DRAG PITCH */
+.pitch-container{position:relative;background:var(--green-mid);border-radius:16px;overflow:visible;border:1px solid var(--border);touch-action:none;user-select:none}
+.pitch-svg-wrap{position:relative;width:100%}
+.drag-hint{display:flex;align-items:center;gap:6px;font-size:11px;color:var(--text2);margin-bottom:6px;padding:6px 8px;background:rgba(200,240,64,0.05);border-radius:8px;border:1px solid rgba(200,240,64,0.1)}
+.drag-locked-notice{display:flex;align-items:center;gap:6px;font-size:11px;color:var(--gold);margin-bottom:6px;padding:6px 8px;background:rgba(240,192,64,0.05);border-radius:8px;border:1px solid rgba(240,192,64,0.2)}
+
+/* PLAYER draggable node */
+.draggable-player{position:absolute;cursor:grab;transition:filter 0.15s;touch-action:none;user-select:none;display:flex;flex-direction:column;align-items:center;gap:2px}
+.draggable-player.dragging{cursor:grabbing;filter:drop-shadow(0 4px 12px rgba(200,240,64,0.5));z-index:50;transition:none}
+.draggable-player.me-player{cursor:grab}
+.draggable-player.locked{cursor:not-allowed;opacity:0.8}
+.player-ring{border-radius:50%;border:2.5px solid;display:flex;align-items:center;justify-content:center;overflow:hidden}
+.player-ring.team-a{border-color:#c8f040}
+.player-ring.team-b{border-color:#ff6060}
+.player-label{font-size:8px;font-weight:700;color:white;text-shadow:0 1px 3px rgba(0,0,0,0.8);white-space:nowrap;max-width:50px;overflow:hidden;text-overflow:ellipsis;text-align:center;background:rgba(0,0,0,0.4);border-radius:4px;padding:1px 4px}
+.status-bubble-html{background:rgba(15,15,20,0.88);border:0.5px solid rgba(255,255,255,0.15);border-radius:99px;padding:2px 6px;font-size:8px;color:white;white-space:nowrap;margin-bottom:2px;max-width:80px;overflow:hidden;text-overflow:ellipsis}
+/* VENUE CARD */
+.venue-card{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:14px 16px;margin-bottom:10px}
+.venue-verified-banner{background:rgba(74,158,255,0.1);border:1px solid rgba(74,158,255,0.25);border-radius:10px;padding:8px 12px;display:flex;align-items:center;gap:8px;font-size:12px;color:var(--verified);margin-bottom:10px}

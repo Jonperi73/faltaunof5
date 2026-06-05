@@ -1,0 +1,65 @@
+.app{max-width:430px;margin:0 auto;min-height:100vh;display:flex;flex-direction:column;position:relative;overflow:hidden}
+.screen{position:absolute;inset:0;display:flex;flex-direction:column;overflow-y:auto;overflow-x:hidden;background:var(--green-dark);transition:transform 0.3s cubic-bezier(.4,0,.2,1),opacity 0.3s;transform:translateX(100%);opacity:0;pointer-events:none}
+.screen.active{transform:translateX(0);opacity:1;pointer-events:all;position:relative}
+.topbar{display:flex;align-items:center;gap:10px;padding:16px 16px 8px;flex-shrink:0}
+.topbar-title{font-family:var(--font-black);font-size:20px;flex:1}
+.back-btn{width:36px;height:36px;border-radius:50%;background:var(--card);border:none;color:var(--text);display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0}
+.back-btn svg{width:18px;height:18px}
+.bottomnav{flex-shrink:0;display:flex;background:var(--card);border-top:1px solid var(--border);padding:8px 0 max(8px,env(safe-area-inset-bottom))}
+.nav-btn{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;background:none;border:none;color:var(--text2);cursor:pointer;font-size:10px;padding:4px 0;transition:color 0.2s}
+.nav-btn.active{color:var(--accent)}
+.nav-btn svg{width:22px;height:22px}
+.card{background:var(--card);border-radius:16px;border:1px solid var(--border);padding:16px}
+.card+.card{margin-top:10px}
+.btn{display:flex;align-items:center;justify-content:center;gap:8px;padding:13px 20px;border-radius:12px;border:none;font-family:var(--font);font-size:15px;font-weight:600;cursor:pointer;transition:transform 0.15s,opacity 0.15s;width:100%}
+.btn:active{transform:scale(0.97)}
+.btn-accent{background:var(--accent);color:var(--green-dark)}
+.btn-outline{background:transparent;color:var(--text);border:1px solid var(--border)}
+.btn-outline:hover{background:var(--card2)}
+.btn-danger{background:rgba(224,96,96,0.15);color:var(--danger);border:1px solid rgba(224,96,96,0.3)}
+.btn-info{background:rgba(96,180,224,0.15);color:var(--info);border:1px solid rgba(96,180,224,0.3)}
+.btn-verified{background:rgba(74,158,255,0.15);color:var(--verified);border:1px solid rgba(74,158,255,0.3)}
+.btn-sm{padding:8px 14px;font-size:13px;width:auto;border-radius:8px}
+.field{margin-bottom:14px}
+.field label{display:block;font-size:12px;color:var(--text2);margin-bottom:6px;text-transform:uppercase;letter-spacing:0.06em;font-weight:600}
+.field input,.field select,.field textarea{width:100%;background:var(--card2);border:1px solid var(--border);border-radius:10px;padding:11px 14px;color:var(--text);font-family:var(--font);font-size:15px;outline:none;transition:border-color 0.2s}
+.field input:focus,.field textarea:focus{border-color:var(--accent)}
+.field select{appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24'%3E%3Cpath fill='%239aaa90' d='M7 10l5 5 5-5z'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 12px center}
+.field select option{background:#1e2e1e}
+.field textarea{resize:vertical;min-height:70px}
+.field-row{display:grid;grid-template-columns:1fr;gap:10px}
+.badge{display:inline-flex;align-items:center;gap:4px;font-size:11px;font-weight:600;padding:3px 9px;border-radius:99px}
+.badge-public{background:rgba(200,240,64,0.15);color:var(--accent)}
+.badge-private{background:rgba(240,192,64,0.15);color:var(--gold)}
+.badge-open{background:rgba(74,154,74,0.2);color:#80e880}
+.badge-full{background:rgba(224,96,96,0.15);color:var(--danger)}
+.badge-done{background:rgba(100,100,200,0.15);color:#a0a0ff}
+.badge-verified{background:rgba(74,158,255,0.15);color:var(--verified)}
+.toggle-row{display:flex;align-items:center;justify-content:space-between;padding:10px 0}
+.toggle-wrap{position:relative;width:46px;height:26px}
+.toggle-wrap input{opacity:0;width:0;height:0;position:absolute}
+.toggle-track{position:absolute;inset:0;background:var(--card2);border:1px solid var(--border);border-radius:13px;transition:0.2s;cursor:pointer}
+.toggle-track:before{content:'';position:absolute;width:20px;height:20px;left:2px;top:2px;background:var(--text2);border-radius:50%;transition:0.2s}
+.toggle-wrap input:checked~.toggle-track{background:var(--accent);border-color:var(--accent)}
+.toggle-wrap input:checked~.toggle-track:before{transform:translateX(20px);background:var(--green-dark)}
+.tabs{display:flex;gap:0;border-bottom:1px solid var(--border);margin:0 16px}
+.tab{padding:10px 14px;font-size:13px;font-weight:600;color:var(--text2);background:none;border:none;border-bottom:2px solid transparent;cursor:pointer;transition:color 0.2s;margin-bottom:-1px}
+.tab.active{color:var(--accent);border-bottom-color:var(--accent)}
+.notice{background:var(--card2);border:1px solid var(--border);border-radius:10px;padding:10px 14px;font-size:13px;color:var(--text2);display:flex;align-items:center;gap:8px}
+.scroll-content{padding:0 16px 100px}
+.splash{position:fixed;inset:0;background:var(--green-dark);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;z-index:100;transition:opacity 0.4s}
+.splash.hidden{opacity:0;pointer-events:none}
+.divider{height:1px;background:var(--border);margin:14px 0}
+.stats-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin:12px 0}
+.stat-box{background:var(--card2);border-radius:10px;padding:10px;text-align:center}
+.stat-val{font-family:var(--font-black);font-size:22px;color:var(--accent)}
+.stat-lbl{font-size:11px;color:var(--text2);margin-top:2px}
+/* MODAL bottom sheet */
+.modal-backdrop{position:fixed;inset:0;background:rgba(0,0,0,0.6);z-index:200;display:none;align-items:flex-end;justify-content:center}
+.modal-backdrop.open{display:flex}
+.modal-sheet{background:var(--card);border-radius:20px 20px 0 0;padding:20px 20px max(20px,env(safe-area-inset-bottom));width:100%;max-width:430px;max-height:85vh;overflow-y:auto}
+.modal-handle{width:36px;height:4px;background:var(--border);border-radius:2px;margin:0 auto 16px}
+.modal-title{font-family:var(--font-black);font-size:18px;margin-bottom:16px}
+/* SORTEO animation */
+@keyframes shuffle{0%{transform:rotate(0deg) scale(1)}25%{transform:rotate(-5deg) scale(1.05)}75%{transform:rotate(5deg) scale(1.05)}100%{transform:rotate(0deg) scale(1)}}
+.shuffling{animation:shuffle 0.3s ease 3}
