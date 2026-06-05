@@ -45,7 +45,7 @@
     <div style="font-family:var(--font-black);font-size:36px;text-align:center;color:var(--accent);margin-bottom:4px">Fulbito 5</div>
     <div style="text-align:center;color:var(--text2);margin-bottom:36px;font-size:14px">Organizá tu partido, juntá el equipo</div>
     <div id="auth-login-form">
-      <div class="field"><label>Usuario</label><input id="login-user" type="text" placeholder="ej. ricky" autocomplete="username"/></div>
+      <div class="field"><label>Email</label><input id="login-email" type="email" placeholder="tu@email.com" autocomplete="email"/></div>
       <div class="field"><label>Contraseña</label><input id="login-pass" type="password" placeholder="••••••"/></div>
       <button class="btn btn-accent" style="margin-top:8px" onclick="doLogin()">Entrar</button>
       <button class="btn btn-outline" style="margin-top:10px" onclick="showRegister()">Crear cuenta</button>
@@ -65,6 +65,7 @@
       </div>
       <div class="field"><label>Nombre completo</label><input id="reg-name" type="text" placeholder="ej. Ricky Pérez"/></div>
       <div class="field"><label>Usuario</label><input id="reg-user" type="text" placeholder="sin espacios"/></div>
+      <div class="field"><label>Email</label><input id="reg-email" type="email" placeholder="tu@email.com"/></div>
       <div class="field"><label>Contraseña</label><input id="reg-pass" type="password" placeholder="min 4 caracteres"/></div>
       <!-- Cancha fields (hidden by default) -->
       <div id="reg-cancha-fields" style="display:none">

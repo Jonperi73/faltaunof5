@@ -16,23 +16,59 @@ function showLogin(){document.getElementById('auth-login-form').style.display='b
 function previewPhoto(input,previewId,dataId){
   readImageFile(input,result=>{document.getElementById(dataId).value=result;document.getElementById(previewId).innerHTML=`<img src="${result}" style="width:100%;height:100%;object-fit:cover;border-radius:50%"/>`;});
 }
-function doLogin(){
-  const u=document.getElementById('login-user').value.trim().toLowerCase();
+async function doLogin(){
+  const email=document.getElementById('login-email').value.trim();
   const p=document.getElementById('login-pass').value;
-  if(!users[u])return alert('Usuario no encontrado.');
-  if(users[u].pass!==p)return alert('Contraseña incorrecta.');
-  currentUser=u;save('session',u);afterLogin();
+
+  try{
+    const cred = await signInWithEmailAndPassword(
+      firebaseAuth,
+      email,
+      p
+    );
+
+    console.log("Login correcto:", cred.user.uid);
+
+    afterLogin();
+
+  }catch(error){
+    console.error(error);
+    alert("Email o contraseña incorrectos.");
+  }
 }
-function doRegister(){
+async function doRegister(){
   const name=document.getElementById('reg-name').value.trim();
   const u=document.getElementById('reg-user').value.trim().toLowerCase().replace(/\s/g,'');
+  const email=document.getElementById('reg-email').value.trim();
   const p=document.getElementById('reg-pass').value;
   const photo=document.getElementById('reg-photo-data').value;
-  if(!name||!u||!p)return alert('Completá todos los campos.');
+  if(!name||!u||!email||!p)return alert('Completá todos los campos.');
   if(p.length<4)return alert('Contraseña mínimo 4 caracteres.');
   if(users[u])return alert('Ese usuario ya existe.');
+  try{
+  const cred = await createUserWithEmailAndPassword(
+    firebaseAuth,
+    email,
+    p
+  );
 
-  const newUser={username:u,name,pass:p,photo:photo||null,accountType:regSelectedAccountType,created:Date.now()};
+  console.log("Usuario Firebase creado:", cred.user.uid);
+
+  }catch(error){
+    console.error(error);
+    alert(error.message);
+    return;
+  }
+
+  const newUser={
+  username:u,
+  name,
+  email,
+  pass:p,
+  photo:photo||null,
+  accountType:regSelectedAccountType,
+  created:Date.now()
+};
 
   if(regSelectedAccountType==='cancha'){
     const vname=document.getElementById('reg-venue-name').value.trim();
@@ -48,8 +84,45 @@ function doRegister(){
   users[u]=newUser;
   save('users',users);currentUser=u;save('session',u);afterLogin();
 }
-function afterLogin(){goTo('s-home');renderHome();}
-function doLogout(){currentUser=null;save('session',null);goTo('s-auth');}
+function afterLogin(){
+
+  if(firebaseAuth.currentUser){
+
+    const email = firebaseAuth.currentUser.email;
+
+    const foundUser = Object.keys(users).find(
+      key => users[key].email === email
+    );
+
+    if(foundUser){
+      currentUser = foundUser;
+      save('session', foundUser);
+    }
+  }
+
+  goTo('s-home');
+  renderHome();
+}
+async function doLogout(){
+
+  try{
+
+    await signOutFirebase(firebaseAuth);
+
+    currentUser=null;
+    save('session',null);
+
+    goTo('s-auth');
+
+  }catch(error){
+
+    console.error(error);
+    alert("Error al cerrar sesión");
+
+  }
+
+}
 function isAdmin(){return currentUser&&(users[currentUser]?.accountType==='admin'||ADMIN_USERS.includes(currentUser));}
 function isVenueOwner(){return currentUser&&users[currentUser]?.accountType==='cancha';}
 function isVenueVerified(username){return users[username]?.accountType==='cancha'&&users[username]?.venueVerified===true;}
+
