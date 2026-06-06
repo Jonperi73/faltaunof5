@@ -53,6 +53,18 @@ async function doRegister(){
   );
 
   console.log("Usuario Firebase creado:", cred.user.uid);
+  await setDocFirestore(
+  docFirestore(firebaseDB, "users", cred.user.uid),
+  {
+    username: u,
+    name: name,
+    email: email,
+    accountType: regSelectedAccountType,
+    created: Date.now()
+  }
+);
+
+console.log("Perfil guardado en Firestore");
 
   }catch(error){
     console.error(error);
