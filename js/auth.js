@@ -112,6 +112,9 @@ function afterLogin(){
     }
   }
 
+  console.log("currentUser:", currentUser);
+  console.log("users[currentUser]:", users[currentUser]);
+
   const uid = firebaseAuth.currentUser.uid;
 
 getDocFirestore(

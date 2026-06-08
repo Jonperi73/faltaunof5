@@ -26,7 +26,14 @@ function renderRoomList(containerId,list){
         <div style="display:flex;gap:5px;flex-wrap:wrap;justify-content:flex-end;flex-shrink:0;margin-left:8px">
           ${r.isPrivate?'<span class="badge badge-private">🔒</span>':'<span class="badge badge-public">🌐</span>'}
           ${ownerVerified?'<span class="badge badge-verified">✓ Verificada</span>':''}
-          ${isOver?'<span class="badge badge-done">Final</span>':full?'<span class="badge badge-full">Lleno</span>':'<span class="badge badge-open">'+r.players.length+'/'+r.max+'</span>'}
+          ${r.cancelled
+            ? '<span class="badge badge-danger">🚫 Cancelado</span>'
+            : isOver
+              ? '<span class="badge badge-done">Final</span>'
+              : full
+                ? '<span class="badge badge-full">Lleno</span>'
+                : '<span class="badge badge-open">'+r.players.length+'/'+r.max+'</span>'
+          }
         </div>
       </div>
       <div class="room-card-meta">
@@ -75,6 +82,7 @@ function createRoom(){
   rooms.push(r);save('rooms',rooms);save('nextRoomId',nextRoomId);
   ['c-name','c-venue','c-address','c-date','c-time','c-cost','c-desc'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
   document.getElementById('c-private').checked=false;
+  screenHistory = ['s-home'];
   openRoom(r.id);
 }
 

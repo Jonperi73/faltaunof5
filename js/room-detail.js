@@ -28,6 +28,14 @@ function renderDetailInfo(room){
 
   let html='';
 
+  if(room.cancelled){
+  html+=`
+    <div class="notice" style="background:#5a1d1d;border:1px solid #ff6666;margin-bottom:12px">
+      🚫 ESTE PARTIDO FUE CANCELADO POR EL ORGANIZADOR
+    </div>
+  `;
+}
+
   // Verified venue banner
   if(ownerVerified){
     html+=`<div class="venue-verified-banner">
@@ -126,21 +134,39 @@ function renderDetailInfo(room){
   }
   html+=`</div></div>`;
 
-  // Action buttons
-  if(!isOver){
-    if(inRoom){
-      html+=`<div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px">
-        <button class="btn btn-outline btn-sm" onclick="markLate(${room.id})">⏰ Llegué tarde</button>
-        <button class="btn btn-danger btn-sm" onclick="leaveRoom(${room.id})">Salir</button>
-        ${isOwner?`<button class="btn btn-outline btn-sm" onclick="openGoalForm(${room.id})">⚽ Goles</button>`:''}
-        ${isOwner?`<button class="btn btn-accent btn-sm" onclick="openResultForm(${room.id})">🏆 Resultado</button>`:''}
-      </div>`;
-    } else if(!full&&!isVenueOwner()){
-      html+=`<button class="btn btn-accent" style="margin-bottom:16px" onclick="joinRoom(${room.id})">+ Anotarme</button>`;
-    } else if(full){
-      html+=`<div class="notice" style="margin-bottom:16px">La sala está completa.</div>`;
-    }
+ // Action buttons
+if(!isOver){
+
+  if(inRoom){
+
+    html+=`<div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px">
+      <button class="btn btn-outline btn-sm" onclick="markLate(${room.id})">⏰ Llegué tarde</button>
+      <button class="btn btn-danger btn-sm" onclick="leaveRoom(${room.id})">Salir</button>
+      ${isOwner?`<button class="btn btn-outline btn-sm" onclick="openGoalForm(${room.id})">⚽ Goles</button>`:''}
+      ${isOwner?`<button class="btn btn-accent btn-sm" onclick="openResultForm(${room.id})">🏆 Resultado</button>`:''}
+      ${isOwner?`<button class="btn btn-danger btn-sm" onclick="cancelRoom(${room.id})">🚫 Cancelar Partido</button>`:''}
+    </div>`;
+
   }
+  else if(room.cancelled){
+
+    html+=`<div class="notice" style="margin-bottom:16px">
+      🚫 Este partido fue cancelado
+    </div>`;
+
+  }
+  else if(!full && !isVenueOwner()){
+
+    html+=`<button class="btn btn-accent" style="margin-bottom:16px" onclick="joinRoom(${room.id})">+ Anotarme</button>`;
+
+  }
+  else if(full){
+
+    html+=`<div class="notice" style="margin-bottom:16px">La sala está completa.</div>`;
+
+  }
+
+}
 
   // MVP voting
   if(isOver&&inRoom&&!room.mvpWinner){
@@ -241,6 +267,23 @@ function sortearEquipos(id){
   const pitchEl=document.getElementById(`pitch-drag-${id}`);
   if(pitchEl){pitchEl.style.opacity='0.5';pitchEl.style.transform='scale(0.98)';setTimeout(()=>{pitchEl.style.opacity='';pitchEl.style.transform='';renderDetailInfo(room);},600);}
   else renderDetailInfo(room);
+}
+function cancelRoom(id){
+
+  if(!confirm('¿Seguro que querés cancelar este partido?')) return;
+
+  const room = rooms.find(r=>r.id===id);
+
+  if(!room) return;
+
+  room.cancelled = true;
+  room.cancelledAt = Date.now();
+
+  save('rooms', rooms);
+
+  alert('Partido cancelado');
+
+  renderDetailInfo(room);
 }
 
 // ============================================================
