@@ -112,6 +112,31 @@ function afterLogin(){
     }
   }
 
+  const uid = firebaseAuth.currentUser.uid;
+
+getDocFirestore(
+  docFirestore(firebaseDB, "users", uid)
+).then((snap)=>{
+
+  const firestoreUser = snap.data();
+
+  console.log("Firestore user:", firestoreUser);
+
+  if(firestoreUser){
+
+  users[firestoreUser.username] = {
+    ...users[firestoreUser.username],
+    ...firestoreUser
+  };
+
+  save('users', users);
+
+  console.log("Usuario sincronizado desde Firestore");
+
+}
+
+});
+
   goTo('s-home');
   renderHome();
 }
