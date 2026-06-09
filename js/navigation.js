@@ -3,7 +3,7 @@
 // ============================================================
 function goTo(id){
   const prev=document.querySelector('.screen.active');
-  if(prev && prev.id!==id) screenHistory.push(prev.id);
+  if(prev&&prev.id!==id)screenHistory.push(prev.id);
 
   document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
 
@@ -13,10 +13,10 @@ function goTo(id){
   currentScreen=id;
   next.scrollTop=0;
 
-  if(id==='s-home') renderHome();
-  if(id==='s-ranking') renderRanking();
-  if(id==='s-profile') renderProfile();
-  if(id==='s-admin') renderAdmin();
+  if(id==='s-home')renderHome();
+  if(id==='s-ranking')renderRanking();
+  if(id==='s-profile')renderProfile();
+  if(id==='s-admin')renderAdmin();
 }
 
 function goBack(){
@@ -32,7 +32,6 @@ function goBack(){
 //  TABS
 // ============================================================
 function setTab(group,tab,btn){
-
   const prefix=`tab-${group}-`;
 
   document.querySelectorAll(`[id^="${prefix}"]`).forEach(el=>{
@@ -46,13 +45,13 @@ function setTab(group,tab,btn){
   btn.classList.add('active');
 
   if(group==='detail'){
-    if(tab==='chat') renderChat(activeRoomId);
-    if(tab==='pagos') renderPagos(activeRoomId);
-    if(tab==='historial') renderHistorial(activeRoomId);
+    if(tab==='chat')renderChat(activeRoomId);
+    if(tab==='pagos')renderPagos(activeRoomId);
+    if(tab==='historial')renderHistorial(activeRoomId);
 
     if(tab==='info'){
       const room=rooms.find(r=>r.id===activeRoomId);
-      if(room) renderDetailInfo(room);
+      if(room)renderDetailInfo(room);
     }
   }
 }
