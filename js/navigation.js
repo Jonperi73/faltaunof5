@@ -12,8 +12,13 @@ function goTo(id){
   if(id==='s-admin')renderAdmin();
 }
 function goBack(){
-  if(screenHistory.length){const prev=screenHistory.pop();goTo(prev);}
-}
+
+  console.log("Historial:", screenHistory);
+
+  if(screenHistory.length){
+    const prev=screenHistory.pop();
+    goTo(prev);
+  }
 
 // ============================================================
 //  TABS
