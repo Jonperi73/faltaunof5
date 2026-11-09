@@ -105,6 +105,95 @@ Object.assign(window, {
     return snap.docs.map(d => ({ id: d.id, ...d.data() }))
       .filter(t => t.status === "active");
   }
+  
+  // Publicaciones y solicitudes del Mercado de Pases.
+  createTransferListing: async listing => {
+    const uid = auth.currentUser?.uid;
+    if (!uid) throw new Error("Tenés que iniciar sesión.");
+    const kind = listing.kind;
+    if (!["player", "team"].includes(kind)) throw new Error("Tipo de publicación inválido.");
+    const listingId = crypto.randomUUID();
+    const payload = {
+      kind,
+      ownerId: uid,
+      title: String(listing.title || "").trim(),
+      description: String(listing.description || "").trim(),
+      zone: String(listing.zone || "").trim(),
+      status: "active",
+      createdAt: Date.now(),
+      updatedAt: Date.now()
+    };
+    if (!payload.title) throw new Error("La publicación necesita un título.");
+    if (kind === "player") {
+      payload.position = String(listing.position || "Cualquiera");
+      payload.playerId = uid;
+    } else {
+      const teamId = String(listing.teamId || "");
+      if (!teamId) throw new Error("Falta seleccionar el equipo.");
+      const teamSnap = await getDoc(doc(db, "teams", teamId));
+      if (!teamSnap.exists()) throw new Error("El equipo no existe.");
+      const team = teamSnap.data();
+      if (team.adminId !== uid && team.captainId !== uid)
+        throw new Error("Solo el administrador o capitán puede publicar búsquedas.");
+      payload.teamId = teamId;
+      payload.teamName = team.name || "";
+      payload.positionsNeeded = Array.isArray(listing.positionsNeeded) ? listing.positionsNeeded : [];
+      payload.playersNeeded = Math.max(1, Number(listing.playersNeeded) || 1);
+    }
+    await setDoc(doc(db, "transfer_listings", listingId), payload);
+    return { id: listingId, ...payload };
+  },
+  getActiveTransferListings: async kind => {
+    const snap = await getDocs(collection(db, "transfer_listings"));
+    return snap.docs.map(d => ({ id: d.id, ...d.data() }))
+      .filter(x => x.status === "active" && (!kind || x.kind === kind));
+  },
+  sendTransferRequest: async request => {
+    const uid = auth.currentUser?.uid;
+    if (!uid) throw new Error("Tenés que iniciar sesión.");
+    const type = request.type;
+    if (!["team_invitation", "player_application"].includes(type))
+      throw new Error("Tipo de solicitud inválido.");
+    const teamId = String(request.teamId || "");
+    const playerId = String(request.playerId || "");
+    if (!teamId || !playerId) throw new Error("Faltan datos del equipo o jugador.");
+    if (type === "team_invitation" && uid !== playerId)
+      throw new Error("La invitación debe enviarla el jugador destinatario o gestionarse desde el equipo.");
+    const teamRef = doc(db, "teams", teamId);
+    const playerRef = doc(db, "player_profiles", playerId);
+    const requestId = type + "_" + teamId + "_" + playerId;
+    const requestRef = doc(db, "transfer_requests", requestId);
+    const notificationRef = doc(collection(db, "notifications"));
+    await runTransaction(db, async tx => {
+      const [teamSnap, playerSnap, existingSnap] = await Promise.all([
+        tx.get(teamRef), tx.get(playerRef), tx.get(requestRef)
+      ]);
+      if (!teamSnap.exists()) throw new Error("El equipo no existe.");
+      if (!playerSnap.exists()) throw new Error("El jugador todavía no tiene perfil público.");
+      const team = teamSnap.data();
+      if (type === "player_application" && uid !== playerId)
+        throw new Error("Solo podés postularte con tu propia cuenta.");
+      if (type === "team_invitation" && team.adminId !== uid && team.captainId !== uid)
+        throw new Error("No tenés permisos para invitar jugadores.");
+      if (existingSnap.exists() && existingSnap.data().status === "pending")
+        throw new Error("Ya existe una solicitud pendiente para este jugador y equipo.");
+      const recipientId = type === "team_invitation" ? playerId : team.adminId;
+      tx.set(requestRef, {
+        type, teamId, playerId, senderId: uid, recipientId,
+        status: "pending", createdAt: Date.now(), updatedAt: Date.now()
+      });
+      tx.set(notificationRef, {
+        userId: recipientId,
+        type: "transfer_request",
+        title: type === "team_invitation" ? "Invitación a un equipo" : "Nuevo jugador interesado",
+        message: type === "team_invitation" ? "Un equipo te invitó a sumarte." : "Un jugador quiere sumarse a tu equipo.",
+        relatedId: requestId,
+        read: false,
+        createdAt: Date.now()
+      });
+    });
+    return requestId;
+  }
     startFirestoreTournament: async (tournamentId, matches) => runTransaction(db, async tx => {
     const ref = doc(db, "tournaments", tournamentId);
     const snap = await tx.get(ref);
