@@ -45,7 +45,67 @@ Object.assign(window, {
     tx.update(ref, { teams: tournament.teams });
     return tournament;
   }),
-  startFirestoreTournament: async (tournamentId, matches) => runTransaction(db, async tx => {
+
+  // Perfiles públicos y equipos permanentes (base del Mercado de Pases).
+  // El WhatsApp se mantiene fuera del perfil público hasta implementar
+  // una lectura controlada según la preferencia showWhatsapp.
+  savePublicPlayerProfile: async profile => {
+    const uid = auth.currentUser?.uid;
+    if (!uid) throw new Error("Tenés que iniciar sesión.");
+    const ref = doc(db, "player_profiles", uid);
+    const payload = {
+      userId: uid,
+      username: String(profile.username || "").trim().toLowerCase(),
+      name: String(profile.name || "").trim(),
+      position: String(profile.position || "Cualquiera"),
+      zone: String(profile.zone || "").trim(),
+      description: String(profile.description || "").trim(),
+      lookingForTeam: Boolean(profile.lookingForTeam),
+      status: "active",
+      updatedAt: Date.now()
+    };
+    await setDoc(ref, payload, { merge: true });
+    return payload;
+  },
+  getPublicPlayerProfiles: async () => {
+    const snap = await getDocs(collection(db, "player_profiles"));
+    return snap.docs.map(d => ({ id: d.id, ...d.data() }))
+      .filter(p => p.status === "active");
+  },
+  createPermanentTeam: async team => {
+    const uid = auth.currentUser?.uid;
+    if (!uid) throw new Error("Tenés que iniciar sesión.");
+    const teamId = crypto.randomUUID();
+    const teamRef = doc(db, "teams", teamId);
+    const memberRef = doc(db, "teams", teamId, "members", uid);
+    const payload = {
+      name: String(team.name || "").trim(),
+      description: String(team.description || "").trim(),
+      zone: String(team.zone || "").trim(),
+      teamType: "permanent",
+      createdBy: uid,
+      adminId: uid,
+      captainId: uid,
+      status: "active",
+      createdAt: Date.now(),
+      updatedAt: Date.now()
+    };
+    if (!payload.name) throw new Error("El equipo necesita un nombre.");
+    await runTransaction(db, async tx => {
+      tx.set(teamRef, payload);
+      tx.set(memberRef, {
+        userId: uid, role: "captain", status: "active",
+        joinedAt: Date.now()
+      });
+    });
+    return { id: teamId, ...payload };
+  },
+  getActiveTeams: async () => {
+    const snap = await getDocs(collection(db, "teams"));
+    return snap.docs.map(d => ({ id: d.id, ...d.data() }))
+      .filter(t => t.status === "active");
+  }
+    startFirestoreTournament: async (tournamentId, matches) => runTransaction(db, async tx => {
     const ref = doc(db, "tournaments", tournamentId);
     const snap = await tx.get(ref);
     if (!snap.exists()) throw new Error("El torneo ya no existe.");
