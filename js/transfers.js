@@ -49,7 +49,7 @@ async function renderTransferListings() {
 }
 async function openTransferPublish() {
   if (!firebaseAuth.currentUser) return alert("Iniciá sesión para publicar.");
-  const choice = prompt("¿Qué querés publicar?\n1 - Busco equipo (jugador)\n2 - Mi equipo busca refuerzos");
+  const choice = prompt("¿Qué querés publicar?\n1 - Busco equipo (jugador)\n2 - Mi equipo busca refuerzos\n3 - Crear equipo casual para un partido/torneo");
   if (choice === "1") {
     const user = users[currentUser] || {};
     const title = prompt("Título de tu publicación:", user.name || currentUser || "");
@@ -65,6 +65,15 @@ async function openTransferPublish() {
       document.querySelectorAll("#s-transfers .tab").forEach((x,i)=>x.classList.toggle("active",i===0));
       renderTransferListings();
     } catch(e) { alert(e.message || "No se pudo publicar."); }
+  } else if (choice === "3") {
+    const name = prompt("Nombre del equipo casual:");
+    if (!name) return;
+    const zone = prompt("Zona:", "La Plata");
+    const description = prompt("¿Para qué partido o torneo es? (opcional):", "");
+    try {
+      await createCasualTeam({name,zone,description});
+      alert("¡Equipo casual creado! Lo vas a encontrar en Solicitudes, dentro de Mis equipos y planteles.");
+    } catch(e) { alert(e.message || "No se pudo crear el equipo casual."); }
   } else if (choice === "2") {
     try {
       const teams = await getActiveTeams();
