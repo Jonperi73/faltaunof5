@@ -72,10 +72,12 @@ async function sendTransferRequest(request) {
       throw new Error("Ya existe una solicitud pendiente para este jugador y equipo.");
     const recipientId = type === "team_invitation" ? playerId : (team.adminId || team.captainId);
     const now = Date.now();
-    tx.set(requestRef, {
+    const requestData = {
       type, teamId, playerId, senderId: uid, recipientId,
       status: "pending", createdAt: now, updatedAt: now
-    });
+    };
+    if (existingSnap.exists()) tx.update(requestRef, requestData);
+    else tx.set(requestRef, requestData);
     tx.set(notificationRef, {
       userId: recipientId, type: "transfer_request",
       title: type === "team_invitation" ? "Invitación a un equipo" : "Nuevo jugador interesado",
