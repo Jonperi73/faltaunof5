@@ -18,6 +18,7 @@ async function renderTransferListings() {
   if (!root) return;
   root.innerHTML = '<div class="notice">⚽ Cargando publicaciones…</div>';
   try {
+    if (transferTab === "requests") return renderTransferRequests(root);
     transferCache = await getActiveTransferListings();
     const uid = firebaseAuth.currentUser?.uid;
     const items = transferCache.filter(x => transferTab === "mine"
@@ -111,4 +112,48 @@ async function invitePlayerToTeam(playerId) {
     await sendTransferRequest({type:"team_invitation",teamId:mine[selected-1].id,playerId});
     alert("¡Invitación enviada!");
   } catch(e) { alert(e.message || "No se pudo enviar la invitación."); }
+}
+
+async function renderTransferRequests(root) {
+  try {
+    const [requests, teams, profiles, notifications] = await Promise.all([
+      getMyTransferRequests(), getActiveTeams(), getPublicPlayerProfiles(), getMyNotifications()
+    ]);
+    const uid = firebaseAuth.currentUser?.uid;
+    const teamMap = new Map(teams.map(t=>[t.id,t]));
+    const profileMap = new Map(profiles.map(p=>[p.id,p]));
+    const unread = notifications.filter(n=>!n.read);
+    const notificationHtml = unread.length ? `<div class="card transfer-notice"><strong>🔔 ${unread.length} notificación(es) sin leer</strong>${unread.slice(0,4).map(n=>`<div class="transfer-notification"><span>${transferEsc(n.title || "Aviso")}</span><button class="btn btn-outline btn-sm" onclick="readTransferNotification('${transferEsc(n.id)}')">Marcar leída</button></div>`).join("")}</div>` : "";
+    if (!requests.length) {
+      root.innerHTML = notificationHtml + '<div class="card transfer-empty"><div style="font-size:34px">📬</div><h3>No tenés solicitudes todavía</h3><p>Cuando un equipo te invite o alguien se interese por tu equipo, vas a verlo acá.</p></div>';
+      return;
+    }
+    const cards = requests.map(r=>{
+      const team = teamMap.get(r.teamId) || {};
+      const player = profileMap.get(r.playerId) || {};
+      const received = r.recipientId === uid;
+      const title = r.type === "team_invitation" ? (team.name || "Invitación a un equipo") : (player.name || player.username || "Jugador interesado");
+      const detail = r.type === "team_invitation" ? "Te invitaron a sumarte a este equipo." : "Este jugador quiere sumarse a tu plantel.";
+      const status = r.status === "pending" ? "Pendiente" : r.status === "accepted" ? "Aceptada" : r.status === "rejected" ? "Rechazada" : r.status;
+      const actions = received && r.status === "pending" ? `<div class="transfer-actions"><button class="btn btn-accent" onclick="answerTransferRequest('${transferEsc(r.id)}','accepted')">Aceptar</button><button class="btn btn-outline" onclick="answerTransferRequest('${transferEsc(r.id)}','rejected')">Rechazar</button></div>` : "";
+      return `<article class="card transfer-card"><div class="transfer-card-head"><span class="badge badge-public">${received ? "RECIBIDA" : "ENVIADA"}</span><span class="transfer-zone">${transferEsc(status)}</span></div><h3>${transferEsc(title)}</h3><p>${transferEsc(detail)}</p><div class="transfer-subtitle">Equipo: ${transferEsc(team.name || "No disponible")}</div>${actions}</article>`;
+    }).join("");
+    root.innerHTML = notificationHtml + cards;
+  } catch(e) {
+    console.error(e);
+    root.innerHTML = '<div class="notice">No se pudieron cargar las solicitudes. Verificá las reglas de Firestore y volvé a intentar.</div>';
+  }
+}
+async function answerTransferRequest(id, decision) {
+  const verb = decision === "accepted" ? "aceptar" : "rechazar";
+  if (!confirm("¿Querés "+verb+" esta solicitud?")) return;
+  try {
+    await respondTransferRequest(id, decision);
+    alert(decision === "accepted" ? "¡Solicitud aceptada! El jugador ya forma parte del equipo." : "Solicitud rechazada.");
+    renderTransferListings();
+  } catch(e) { alert(e.message || "No se pudo responder la solicitud."); }
+}
+async function readTransferNotification(id) {
+  try { await markNotificationRead(id); renderTransferListings(); }
+  catch(e) { alert(e.message || "No se pudo actualizar la notificación."); }
 }
