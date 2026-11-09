@@ -214,8 +214,8 @@ Object.assign(window, {
   getMyNotifications: async () => {
     const uid = uidNow();
     if (!uid) return [];
-    const snap = await getDocs(query(collection(db, "notifications"), where("userId", "==", uid), orderBy("createdAt", "desc"), limit(50)));
-    return snap.docs.map(d => ({ id: d.id, ...d.data() }));
+    const snap = await getDocs(query(collection(db, "notifications"), where("userId", "==", uid)));
+    return snap.docs.map(d => ({ id: d.id, ...d.data() })).sort((a,b) => (b.createdAt || 0) - (a.createdAt || 0)).slice(0, 50);
   },
   respondTransferRequest: async (requestId, decision) => {
     const uid = uidNow();
@@ -223,6 +223,7 @@ Object.assign(window, {
     if (!["accepted", "rejected"].includes(decision)) throw new Error("Respuesta inválida.");
     const requestRef = doc(db, "transfer_requests", requestId);
     const notificationRef = doc(collection(db, "notifications"));
+    const historyRef = doc(collection(db, "team_membership_history"));
     await runTransaction(db, async tx => {
       const reqSnap = await tx.get(requestRef);
       if (!reqSnap.exists()) throw new Error("La solicitud ya no existe.");
@@ -242,7 +243,7 @@ Object.assign(window, {
           throw new Error("El jugador ya forma parte de este equipo.");
         const now = Date.now();
         tx.set(memberRef, { userId: req.playerId, role: "member", status: "active", joinedAt: now, joinedFrom: req.type, requestId });
-        tx.set(doc(collection(db, "team_membership_history")), {
+        tx.set(historyRef, {
           teamId: req.teamId, userId: req.playerId, action: "joined",
           source: req.type, requestId, performedBy: uid, createdAt: now
         });
