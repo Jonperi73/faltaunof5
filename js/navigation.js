@@ -15,6 +15,7 @@ function goTo(id){
 
   if(id==='s-home')renderHome();
   if(id==='s-tournaments')renderTournaments();
+  if(id==='s-transfers')renderTransferListings();
   if(id==='s-ranking')renderRanking();
   if(id==='s-profile')renderProfile();
   if(id==='s-admin')renderAdmin();

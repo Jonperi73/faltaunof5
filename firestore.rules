@@ -1,0 +1,187 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function signedIn() {
+      return request.auth != null;
+    }
+
+    function isTeamManager(teamId) {
+      return signedIn()
+        && (get(/databases/$(database)/documents/teams/$(teamId)).data.adminId == request.auth.uid
+          || get(/databases/$(database)/documents/teams/$(teamId)).data.captainId == request.auth.uid);
+    }
+
+    function validTransferRequestCreate() {
+      return request.resource.data.keys().hasOnly([
+          'type', 'teamId', 'playerId', 'senderId', 'recipientId',
+          'status', 'createdAt', 'updatedAt'
+        ])
+        && request.resource.data.status == 'pending'
+        && request.resource.data.senderId == request.auth.uid
+        && request.resource.data.type in ['team_invitation', 'player_application']
+        && exists(/databases/$(database)/documents/teams/$(request.resource.data.teamId))
+        && exists(/databases/$(database)/documents/player_profiles/$(request.resource.data.playerId))
+        && (
+          (request.resource.data.type == 'team_invitation'
+            && isTeamManager(request.resource.data.teamId)
+            && request.resource.data.recipientId == request.resource.data.playerId)
+          ||
+          (request.resource.data.type == 'player_application'
+            && request.resource.data.playerId == request.auth.uid
+            && request.resource.data.recipientId ==
+              get(/databases/$(database)/documents/teams/$(request.resource.data.teamId)).data.adminId)
+        );
+    }
+
+    // Cuentas existentes. Se conserva compatibilidad con el cliente actual.
+    match /users/{userId} {
+      allow read: if signedIn();
+      allow create, update, delete: if signedIn() && request.auth.uid == userId;
+    }
+
+    // Torneos existentes: se conserva temporalmente el comportamiento actual.
+    // Debe endurecerse en una etapa específica porque la app actual aún depende de él.
+    match /tournaments/{tournamentId} {
+      allow read, create, update: if signedIn();
+      allow delete: if false;
+    }
+
+    // Perfil público del jugador. No guardar teléfono/WhatsApp aquí.
+    match /player_profiles/{userId} {
+      allow read: if signedIn();
+      allow create: if signedIn()
+        && request.auth.uid == userId
+        && request.resource.data.userId == userId
+        && !request.resource.data.keys().hasAny(['whatsapp', 'phone']);
+      allow update: if signedIn()
+        && request.auth.uid == userId
+        && request.resource.data.userId == userId
+        && !request.resource.data.diff(resource.data).affectedKeys().hasAny(['whatsapp', 'phone']);
+      allow delete: if signedIn() && request.auth.uid == userId;
+    }
+
+    // Datos privados de contacto. El usuario sólo accede a su documento.
+    match /player_private/{userId} {
+      allow read, create, update: if signedIn() && request.auth.uid == userId;
+      allow delete: if signedIn() && request.auth.uid == userId;
+    }
+
+    match /teams/{teamId} {
+      allow read: if signedIn();
+      allow create: if signedIn()
+        && request.resource.data.createdBy == request.auth.uid
+        && request.resource.data.adminId == request.auth.uid
+        && request.resource.data.captainId == request.auth.uid
+        && request.resource.data.teamType in ['permanent', 'casual']
+        && request.resource.data.status == 'active';
+      allow update: if isTeamManager(teamId)
+        && request.resource.data.createdBy == resource.data.createdBy
+        && request.resource.data.adminId == resource.data.adminId
+        && request.resource.data.teamType == resource.data.teamType;
+      allow delete: if false;
+
+      match /members/{memberId} {
+        allow read: if signedIn();
+        allow create: if signedIn() && (
+          (memberId == request.auth.uid
+            && request.resource.data.userId == memberId
+            && getAfter(/databases/$(database)/documents/teams/$(teamId)).data.createdBy == request.auth.uid
+            && getAfter(/databases/$(database)/documents/teams/$(teamId)).data.adminId == request.auth.uid
+            && request.resource.data.role in ['captain', 'organizer'])
+          ||
+          (request.resource.data.keys().hasAll(['requestId'])
+            && request.resource.data.userId == memberId
+            && existsAfter(/databases/$(database)/documents/transfer_requests/$(request.resource.data.requestId))
+            && getAfter(/databases/$(database)/documents/transfer_requests/$(request.resource.data.requestId)).data.status == 'accepted'
+            && getAfter(/databases/$(database)/documents/transfer_requests/$(request.resource.data.requestId)).data.teamId == teamId
+            && getAfter(/databases/$(database)/documents/transfer_requests/$(request.resource.data.requestId)).data.playerId == memberId)
+        );
+        allow update: if signedIn() && (
+          memberId == request.auth.uid
+          || isTeamManager(teamId)
+        );
+        allow delete: if signedIn() && (memberId == request.auth.uid || isTeamManager(teamId));
+      }
+    }
+
+    match /transfer_listings/{listingId} {
+      allow read: if signedIn();
+      allow create: if signedIn()
+        && request.resource.data.ownerId == request.auth.uid
+        && request.resource.data.status == 'active'
+        && request.resource.data.kind in ['player', 'team']
+        && (
+          (request.resource.data.kind == 'player'
+            && request.resource.data.playerId == request.auth.uid)
+          ||
+          (request.resource.data.kind == 'team'
+            && isTeamManager(request.resource.data.teamId))
+        );
+      allow update: if signedIn()
+        && resource.data.ownerId == request.auth.uid
+        && request.resource.data.ownerId == resource.data.ownerId;
+      allow delete: if signedIn() && resource.data.ownerId == request.auth.uid;
+    }
+
+    match /transfer_requests/{requestId} {
+      allow read: if signedIn()
+        && (resource.data.senderId == request.auth.uid
+          || resource.data.recipientId == request.auth.uid);
+      allow create: if signedIn() && validTransferRequestCreate();
+      allow update: if signedIn() && (
+        (resource.data.status == 'pending'
+          && resource.data.recipientId == request.auth.uid
+          && request.resource.data.diff(resource.data).affectedKeys()
+            .hasOnly(['status', 'respondedBy', 'respondedAt', 'updatedAt'])
+          && request.resource.data.status in ['accepted', 'rejected']
+          && request.resource.data.respondedBy == request.auth.uid)
+        ||
+        (resource.data.status == 'rejected'
+          && resource.data.senderId == request.auth.uid
+          && request.resource.data.diff(resource.data).affectedKeys()
+            .hasOnly(['status', 'createdAt', 'updatedAt'])
+          && request.resource.data.status == 'pending')
+      );
+      allow delete: if false;
+    }
+
+    match /team_membership_history/{eventId} {
+      allow read: if signedIn()
+        && (resource.data.userId == request.auth.uid || isTeamManager(resource.data.teamId));
+      allow create: if signedIn()
+        && existsAfter(/databases/$(database)/documents/transfer_requests/$(request.resource.data.requestId))
+        && getAfter(/databases/$(database)/documents/transfer_requests/$(request.resource.data.requestId)).data.status == 'accepted'
+        && getAfter(/databases/$(database)/documents/transfer_requests/$(request.resource.data.requestId)).data.teamId == request.resource.data.teamId
+        && getAfter(/databases/$(database)/documents/transfer_requests/$(request.resource.data.requestId)).data.playerId == request.resource.data.userId;
+      allow update, delete: if false;
+    }
+
+    match /notifications/{notificationId} {
+      allow read: if signedIn() && resource.data.userId == request.auth.uid;
+      allow create: if signedIn()
+        && request.resource.data.userId is string
+        && request.resource.data.relatedId is string
+        && existsAfter(/databases/$(database)/documents/transfer_requests/$(request.resource.data.relatedId))
+        && (
+          (getAfter(/databases/$(database)/documents/transfer_requests/$(request.resource.data.relatedId)).data.status == 'pending'
+            && getAfter(/databases/$(database)/documents/transfer_requests/$(request.resource.data.relatedId)).data.senderId == request.auth.uid
+            && getAfter(/databases/$(database)/documents/transfer_requests/$(request.resource.data.relatedId)).data.recipientId == request.resource.data.userId)
+          ||
+          (getAfter(/databases/$(database)/documents/transfer_requests/$(request.resource.data.relatedId)).data.status in ['accepted', 'rejected']
+            && getAfter(/databases/$(database)/documents/transfer_requests/$(request.resource.data.relatedId)).data.respondedBy == request.auth.uid
+            && getAfter(/databases/$(database)/documents/transfer_requests/$(request.resource.data.relatedId)).data.senderId == request.resource.data.userId)
+        );
+      allow update: if signedIn()
+        && resource.data.userId == request.auth.uid
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['read'])
+        && request.resource.data.read == true;
+      allow delete: if false;
+    }
+
+    // Bloqueo por defecto para toda colección no declarada.
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}

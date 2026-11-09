@@ -17,7 +17,9 @@
 <link rel="stylesheet" href="./css/chat.css">
 <link rel="stylesheet" href="./css/ranking.css">
 <link rel="stylesheet" href="./css/profile.css">
-<link rel="stylesheet" href="./css/admin.css">\n<link rel="stylesheet" href="./css/tournaments.css">
+<link rel="stylesheet" href="./css/admin.css">
+<link rel="stylesheet" href="./css/tournaments.css">
+<link rel="stylesheet" href="./css/transfers.css">
 <link rel="stylesheet" href="./css/responsive.css">
 </head>
 <body>
@@ -111,7 +113,7 @@
 <div class="screen" id="s-home">
   <div class="topbar">
     <div class="topbar-title">Salas</div>
-    <button class="btn btn-accent btn-sm" onclick="goTo('s-create')" style="width:auto">+ Nueva</button>
+    <button class="btn btn-outline btn-sm" onclick="goTo('s-transfers')" style="width:auto">🔄 Pases</button><button class="btn btn-accent btn-sm" onclick="goTo('s-create')" style="width:auto">+ Nueva</button>
   </div>
   <div class="tabs">
     <button class="tab active" onclick="setTab('home','publicas',this)">Públicas</button>
@@ -192,6 +194,31 @@
   </div>
 </div>
 
+
+<!-- ===== MERCADO DE PASES ===== -->
+<div class="screen" id="s-transfers">
+  <div class="topbar">
+    <button class="back-btn" onclick="goTo('s-home')">‹</button>
+    <div class="topbar-title">Mercado de Pases</div>
+    <button class="btn btn-accent btn-sm" onclick="openTransferPublish()">+ Publicar</button>
+  </div>
+  <div class="tabs">
+    <button class="tab active" onclick="setTransferTab('players',this)">Jugadores</button>
+    <button class="tab" onclick="setTransferTab('teams',this)">Equipos</button>
+    <button class="tab" onclick="setTransferTab('mine',this)">Mis publicaciones</button>
+    <button class="tab" onclick="setTransferTab('requests',this)">Solicitudes</button>
+  </div>
+  <div class="scroll-content" style="padding-top:12px" id="transfers-content">
+    <div id="transfer-listings"></div>
+  </div>
+  <div class="bottomnav">
+    <button class="nav-btn" onclick="goTo('s-home')">Inicio</button>
+    <button class="nav-btn active" onclick="goTo('s-transfers')">🔄 Pases</button>
+    <button class="nav-btn" onclick="goTo('s-tournaments')">🏆 Torneos</button>
+    <button class="nav-btn" onclick="goTo('s-profile')">Perfil</button>
+  </div>
+</div>
+
 <!-- ===== TORNEOS ===== -->
 <div class="screen" id="s-tournaments">
   <div class="topbar"><div class="topbar-title">🏆 Torneos</div><button class="btn btn-accent btn-sm" onclick="showTournamentCreate()">+ Crear</button></div>
@@ -266,6 +293,7 @@
 <script src="./js/profile.js"></script>
 <script src="./js/admin.js"></script>
 <script src="./js/tournaments.js"></script>
+<script src="./js/transfers.js"></script>
 <script src="./js/app.js"></script>
 </body>
 </html>
