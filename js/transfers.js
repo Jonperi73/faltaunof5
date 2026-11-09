@@ -116,8 +116,8 @@ async function invitePlayerToTeam(playerId) {
 
 async function renderTransferRequests(root) {
   try {
-    const [requests, teams, profiles, notifications] = await Promise.all([
-      getMyTransferRequests(), getActiveTeams(), getPublicPlayerProfiles(), getMyNotifications()
+    const [requests, teams, profiles, notifications, myTeams] = await Promise.all([
+      getMyTransferRequests(), getActiveTeams(), getPublicPlayerProfiles(), getMyNotifications(), getMyTeams()
     ]);
     const uid = firebaseAuth.currentUser?.uid;
     const teamMap = new Map(teams.map(t=>[t.id,t]));
@@ -138,7 +138,15 @@ async function renderTransferRequests(root) {
       const actions = received && r.status === "pending" ? `<div class="transfer-actions"><button class="btn btn-accent" onclick="answerTransferRequest('${transferEsc(r.id)}','accepted')">Aceptar</button><button class="btn btn-outline" onclick="answerTransferRequest('${transferEsc(r.id)}','rejected')">Rechazar</button></div>` : "";
       return `<article class="card transfer-card"><div class="transfer-card-head"><span class="badge badge-public">${received ? "RECIBIDA" : "ENVIADA"}</span><span class="transfer-zone">${transferEsc(status)}</span></div><h3>${transferEsc(title)}</h3><p>${transferEsc(detail)}</p><div class="transfer-subtitle">Equipo: ${transferEsc(team.name || "No disponible")}</div>${actions}</article>`;
     }).join("");
-    root.innerHTML = notificationHtml + cards;
+    const rosterHtml = await Promise.all(myTeams.map(async team => {
+      const members = await getTeamMembers(team.id);
+      const roster = members.filter(m=>m.status === "active").map(m=>{
+        const p = profileMap.get(m.userId) || {};
+        return `<div class="transfer-roster-member"><span>${transferEsc(p.name || p.username || m.userId.slice(0,8))}</span><small>${transferEsc(m.role || "member")}</small></div>`;
+      }).join("");
+      return `<section class="card transfer-team-roster"><div class="transfer-card-head"><strong>${transferEsc(team.name)}</strong><span class="badge badge-public">${team.teamType === "casual" ? "CASUAL" : "PERMANENTE"}</span></div><div class="transfer-subtitle">${members.filter(m=>m.status === "active").length} integrante(s) · Tu rol: ${transferEsc(team.myRole || "integrante")}</div>${roster || '<p class="transfer-subtitle">Todavía no hay integrantes.</p>'}</section>`;
+    })).then(items=>items.join(""));
+    root.innerHTML = notificationHtml + (myTeams.length ? '<h3 class="transfer-section-title">Mis equipos y planteles</h3>' + rosterHtml : '') + cards;
   } catch(e) {
     console.error(e);
     root.innerHTML = '<div class="notice">No se pudieron cargar las solicitudes. Verificá las reglas de Firestore y volvé a intentar.</div>';
