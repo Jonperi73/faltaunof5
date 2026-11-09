@@ -96,6 +96,15 @@ async function openTransferPublish() {
 async function applyToTransferTeam(teamId) {
   if (!teamId || !firebaseAuth.currentUser) return;
   try {
+    const user = users[currentUser] || {};
+    await savePublicPlayerProfile({
+      username: currentUser,
+      name: user.name || currentUser,
+      position: user.pos || "Cualquiera",
+      zone: user.zone || "",
+      description: user.description || "",
+      lookingForTeam: true
+    });
     await sendTransferRequest({type:"player_application",teamId,playerId:firebaseAuth.currentUser.uid});
     alert("¡Listo! El equipo recibió tu interés.");
   } catch(e) { alert(e.message || "No se pudo enviar la solicitud."); }
@@ -106,7 +115,7 @@ async function invitePlayerToTeam(playerId) {
     const teams = await getActiveTeams();
     const mine = teams.filter(t => t.adminId === firebaseAuth.currentUser?.uid || t.captainId === firebaseAuth.currentUser?.uid);
     if (!mine.length) return alert("Necesitás ser administrador o capitán de un equipo para invitar jugadores.");
-    const options = mine.map((t,i)=>`${i+1} - ${t.name}`).join("\\n");
+    const options = mine.map((t,i)=>`${i+1} - ${t.name}`).join("\n");
     const selected = Number(prompt("¿Desde qué equipo querés enviar la invitación?\\n"+options));
     if (!selected || !mine[selected-1]) return;
     await sendTransferRequest({type:"team_invitation",teamId:mine[selected-1].id,playerId});
