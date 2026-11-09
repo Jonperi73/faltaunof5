@@ -1,9 +1,11 @@
 //  ROOM LIST
 // ============================================================
 function renderHome(){
-  const pub=rooms.filter(r=>!r.isPrivate);
-  const priv=rooms.filter(r=>r.isPrivate&&(r.owner===currentUser||r.players.includes(currentUser)));
-  const mis=rooms.filter(r=>r.owner===currentUser||r.players.includes(currentUser));
+  // Ocultar partidos cuya fecha y hora ya pasaron, sin borrar su historial.
+  const vigentes=rooms.filter(r=>getCountdown(r.date,r.time)?.type!=='past');
+  const pub=vigentes.filter(r=>!r.isPrivate);
+  const priv=vigentes.filter(r=>r.isPrivate&&(r.owner===currentUser||r.players.includes(currentUser)));
+  const mis=vigentes.filter(r=>r.owner===currentUser||r.players.includes(currentUser));
   renderRoomList('tab-home-publicas',pub);
   renderRoomList('tab-home-privadas-list',priv);
   renderRoomList('tab-home-mis',mis);
