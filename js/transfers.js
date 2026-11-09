@@ -143,7 +143,10 @@ async function renderTransferRequests(root) {
     const unread = notifications.filter(n=>!n.read);
     const notificationHtml = unread.length ? `<div class="card transfer-notice"><strong>🔔 ${unread.length} notificación(es) sin leer</strong>${unread.slice(0,4).map(n=>`<div class="transfer-notification"><span>${transferEsc(n.title || "Aviso")}</span><button class="btn btn-outline btn-sm" onclick="readTransferNotification('${transferEsc(n.id)}')">Marcar leída</button></div>`).join("")}</div>` : "";
     if (!requests.length) {
-      root.innerHTML = notificationHtml + '<div class="card transfer-empty"><div style="font-size:34px">📬</div><h3>No tenés solicitudes todavía</h3><p>Cuando un equipo te invite o alguien se interese por tu equipo, vas a verlo acá.</p></div>';
+      const myTeamsHtml = myTeams.length
+        ? '<h3 class="transfer-section-title">Mis equipos</h3>' + myTeams.map(t=>`<div class="card transfer-team-roster"><strong>${transferEsc(t.name)}</strong><div class="transfer-subtitle">${t.teamType === "casual" ? "Equipo casual" : "Equipo permanente"} · Tu rol: ${transferEsc(t.myRole || "integrante")}</div></div>`).join("")
+        : "";
+      root.innerHTML = notificationHtml + myTeamsHtml + '<div class="card transfer-empty"><div style="font-size:34px">📬</div><h3>No tenés solicitudes todavía</h3><p>Cuando un equipo te invite o alguien se interese por tu equipo, vas a verlo acá.</p></div>';
       return;
     }
     const cards = requests.map(r=>{
