@@ -115,6 +115,17 @@
     <div class="topbar-title">Salas</div>
     <button class="btn btn-outline btn-sm" onclick="goTo('s-transfers')" style="width:auto">🔄 Pases</button><button class="btn btn-accent btn-sm" onclick="goTo('s-create')" style="width:auto">+ Nueva</button>
   </div>
+  <section class="home-transfer-hero" onclick="goTo('s-transfers')" role="button" tabindex="0" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();goTo('s-transfers')}">
+    <div class="home-transfer-glow"></div>
+    <div class="home-transfer-kicker"><span class="home-transfer-live"></span> MERCADO DE PASES</div>
+    <div class="home-transfer-title">¿BUSCÁS EQUIPO<br>O REFUERZOS?</div>
+    <p>Encontrá jugadores, sumate a un plantel o completá tu equipo.</p>
+    <div class="home-transfer-actions">
+      <span>⚽ Encontrar equipo</span>
+      <span>🔥 Buscar jugadores</span>
+    </div>
+    <div class="home-transfer-arrow">ENTRAR AL MERCADO <b>↗</b></div>
+  </section>
   <div class="tabs">
     <button class="tab active" onclick="setTab('home','publicas',this)">Públicas</button>
     <button class="tab" onclick="setTab('home','privadas',this)">Privadas</button>
