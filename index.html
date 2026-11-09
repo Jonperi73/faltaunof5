@@ -192,6 +192,30 @@
   </div>
 </div>
 
+
+<!-- ===== MERCADO DE PASES ===== -->
+<div class="screen" id="s-transfers">
+  <div class="topbar">
+    <button class="back-btn" onclick="goTo('s-home')">‹</button>
+    <div class="topbar-title">Mercado de Pases</div>
+    <button class="btn btn-accent btn-sm" onclick="openTransferPublish()">+ Publicar</button>
+  </div>
+  <div class="tabs">
+    <button class="tab active" onclick="setTransferTab('players',this)">Jugadores</button>
+    <button class="tab" onclick="setTransferTab('teams',this)">Equipos</button>
+    <button class="tab" onclick="setTransferTab('mine',this)">Mis publicaciones</button>
+  </div>
+  <div class="scroll-content" style="padding-top:12px" id="transfers-content">
+    <div id="transfer-listings"></div>
+  </div>
+  <div class="bottomnav">
+    <button class="nav-btn" onclick="goTo('s-home')">Inicio</button>
+    <button class="nav-btn active" onclick="goTo('s-transfers')">🔄 Pases</button>
+    <button class="nav-btn" onclick="goTo('s-tournaments')">🏆 Torneos</button>
+    <button class="nav-btn" onclick="goTo('s-profile')">Perfil</button>
+  </div>
+</div>
+
 <!-- ===== TORNEOS ===== -->
 <div class="screen" id="s-tournaments">
   <div class="topbar"><div class="topbar-title">🏆 Torneos</div><button class="btn btn-accent btn-sm" onclick="showTournamentCreate()">+ Crear</button></div>
@@ -265,7 +289,7 @@
 <script src="./js/ranking.js"></script>
 <script src="./js/profile.js"></script>
 <script src="./js/admin.js"></script>
-<script src="./js/tournaments.js"></script>
+<script src="./js/tournaments.js"></script>\n<script src="./js/transfers.js"></script>
 <script src="./js/app.js"></script>
 </body>
 </html>
