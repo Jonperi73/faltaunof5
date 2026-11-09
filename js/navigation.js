@@ -14,6 +14,7 @@ function goTo(id){
   next.scrollTop=0;
 
   if(id==='s-home')renderHome();
+  if(id==='s-tournaments')renderTournaments();
   if(id==='s-ranking')renderRanking();
   if(id==='s-profile')renderProfile();
   if(id==='s-admin')renderAdmin();
