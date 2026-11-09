@@ -85,6 +85,7 @@ service cloud.firestore {
         allow read: if signedIn();
         allow create: if signedIn() && (
           (memberId == request.auth.uid
+            && request.resource.data.userId == memberId
             && getAfter(/databases/$(database)/documents/teams/$(teamId)).data.createdBy == request.auth.uid
             && getAfter(/databases/$(database)/documents/teams/$(teamId)).data.adminId == request.auth.uid
             && request.resource.data.role in ['captain', 'organizer'])
