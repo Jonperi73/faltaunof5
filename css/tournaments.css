@@ -1,0 +1,8 @@
+.tournament-card{margin-bottom:12px}
+.tournament-card-head{display:flex;align-items:flex-start;justify-content:space-between;gap:10px;margin-bottom:12px}
+.tournament-name{font-family:var(--font-black);font-size:18px;color:var(--text)}
+.tournament-meta{font-size:12px;color:var(--text2);margin-top:4px;line-height:1.5}
+.tournament-team{background:var(--card2);border:1px solid var(--border);border-radius:10px;padding:12px;margin-top:8px;font-size:13px}
+.tournament-team strong{display:block;margin-bottom:5px}
+.tournament-match{display:flex;flex-direction:column;gap:4px;background:var(--card2);border-radius:10px;padding:11px 13px;margin-top:8px;font-size:13px}
+.tournament-match span{color:var(--text2);font-size:11px}
