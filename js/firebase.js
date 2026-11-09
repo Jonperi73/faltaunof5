@@ -241,7 +241,7 @@ Object.assign(window, {
         if (memberSnap.exists() && memberSnap.data().status === "active")
           throw new Error("El jugador ya forma parte de este equipo.");
         const now = Date.now();
-        tx.set(memberRef, { userId: req.playerId, role: "member", status: "active", joinedAt: now, joinedFrom: req.type });
+        tx.set(memberRef, { userId: req.playerId, role: "member", status: "active", joinedAt: now, joinedFrom: req.type, requestId });
         tx.set(doc(collection(db, "team_membership_history")), {
           teamId: req.teamId, userId: req.playerId, action: "joined",
           source: req.type, requestId, performedBy: uid, createdAt: now
