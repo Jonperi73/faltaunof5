@@ -67,7 +67,7 @@ async function createTournament() {
   }
 }
 async function loadTournamentPlayers() {
-  tournamentUsers = (await listFirestoreUsers()).filter(u => u.username && u.accountType !== "cancha" && u.accountType !== "admin");
+  tournamentUsers = (await listFirestoreUsers()).filter(u => u.username && u.accountType === "jugador");
   return tournamentUsers;
 }
 async function openTournament(id) {
@@ -80,7 +80,7 @@ async function openTournament(id) {
     if (!t) return renderTournaments();
     if (!t.started) await loadTournamentPlayers();
     const selected = new Set();
-    const playerOptions = tournamentUsers.map(u => `<option value="${tournamentEsc(u.username)}">${tournamentEsc(u.name || u.username)} (@${tournamentEsc(u.username)})</option>`).join("");
+    const playerOptions = tournamentUsers.map(u => { const occupiedBy = t.teams.find(team => [...team.players, ...team.substitutes].includes(u.username)); const status = occupiedBy ? " · NO DISPONIBLE: " + occupiedBy.name : " · Disponible"; return `<option value="${tournamentEsc(u.username)}">${tournamentEsc(u.name || u.username)} (@${tournamentEsc(u.username)})${tournamentEsc(status)}</option>`; }).join("");
     const teamCards = t.teams.map((team, i) => `
       <div class="tournament-team">
         <strong>${i + 1}. ${tournamentEsc(team.name)}</strong>
