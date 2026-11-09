@@ -89,7 +89,9 @@ service cloud.firestore {
             && getAfter(/databases/$(database)/documents/teams/$(teamId)).data.adminId == request.auth.uid
             && request.resource.data.role in ['captain', 'organizer'])
           ||
-          (existsAfter(/databases/$(database)/documents/transfer_requests/$(request.resource.data.requestId))
+          (request.resource.data.keys().hasAll(['requestId'])
+            && request.resource.data.userId == memberId
+            && existsAfter(/databases/$(database)/documents/transfer_requests/$(request.resource.data.requestId))
             && getAfter(/databases/$(database)/documents/transfer_requests/$(request.resource.data.requestId)).data.status == 'accepted'
             && getAfter(/databases/$(database)/documents/transfer_requests/$(request.resource.data.requestId)).data.teamId == teamId
             && getAfter(/databases/$(database)/documents/transfer_requests/$(request.resource.data.requestId)).data.playerId == memberId)
