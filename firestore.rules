@@ -126,13 +126,20 @@ service cloud.firestore {
         && (resource.data.senderId == request.auth.uid
           || resource.data.recipientId == request.auth.uid);
       allow create: if signedIn() && validTransferRequestCreate();
-      allow update: if signedIn()
-        && resource.data.status == 'pending'
-        && resource.data.recipientId == request.auth.uid
-        && request.resource.data.diff(resource.data).affectedKeys()
-          .hasOnly(['status', 'respondedBy', 'respondedAt', 'updatedAt'])
-        && request.resource.data.status in ['accepted', 'rejected']
-        && request.resource.data.respondedBy == request.auth.uid;
+      allow update: if signedIn() && (
+        (resource.data.status == 'pending'
+          && resource.data.recipientId == request.auth.uid
+          && request.resource.data.diff(resource.data).affectedKeys()
+            .hasOnly(['status', 'respondedBy', 'respondedAt', 'updatedAt'])
+          && request.resource.data.status in ['accepted', 'rejected']
+          && request.resource.data.respondedBy == request.auth.uid)
+        ||
+        (resource.data.status == 'rejected'
+          && resource.data.senderId == request.auth.uid
+          && request.resource.data.diff(resource.data).affectedKeys()
+            .hasOnly(['status', 'createdAt', 'updatedAt'])
+          && request.resource.data.status == 'pending')
+      );
       allow delete: if false;
     }
 
