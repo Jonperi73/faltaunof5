@@ -157,8 +157,6 @@ Object.assign(window, {
     const teamId = String(request.teamId || "");
     const playerId = String(request.playerId || "");
     if (!teamId || !playerId) throw new Error("Faltan datos del equipo o jugador.");
-    if (type === "team_invitation" && uid !== playerId)
-      throw new Error("La invitación debe enviarla el jugador destinatario o gestionarse desde el equipo.");
     const teamRef = doc(db, "teams", teamId);
     const playerRef = doc(db, "player_profiles", playerId);
     const requestId = type + "_" + teamId + "_" + playerId;
