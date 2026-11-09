@@ -37,6 +37,7 @@ async function renderTransferListings() {
         <h3>${transferEsc(title)}</h3><div class="transfer-subtitle">${transferEsc(subtitle)}</div>
         <p>${transferEsc(item.description || (isPlayer ? "Está buscando sumarse a un equipo." : "Está buscando jugadores para su plantel."))}</p>
         ${!isPlayer && uid && item.ownerId !== uid ? `<button class="btn btn-accent" onclick="applyToTransferTeam('${transferEsc(item.teamId)}')">Me interesa</button>` : ""}
+        ${isPlayer && uid && item.ownerId !== uid ? `<button class="btn btn-accent" onclick="invitePlayerToTeam('${transferEsc(item.playerId || item.ownerId)}')">Invitar al equipo</button>` : ""}
         ${isPlayer && item.ownerId === uid ? '<span class="transfer-own">Tu publicación</span>' : ""}
       </article>`;
     }).join("");
@@ -97,4 +98,17 @@ async function applyToTransferTeam(teamId) {
     await sendTransferRequest({type:"player_application",teamId,playerId:firebaseAuth.currentUser.uid});
     alert("¡Listo! El equipo recibió tu interés.");
   } catch(e) { alert(e.message || "No se pudo enviar la solicitud."); }
+}
+
+async function invitePlayerToTeam(playerId) {
+  try {
+    const teams = await getActiveTeams();
+    const mine = teams.filter(t => t.adminId === firebaseAuth.currentUser?.uid || t.captainId === firebaseAuth.currentUser?.uid);
+    if (!mine.length) return alert("Necesitás ser administrador o capitán de un equipo para invitar jugadores.");
+    const options = mine.map((t,i)=>`${i+1} - ${t.name}`).join("\\n");
+    const selected = Number(prompt("¿Desde qué equipo querés enviar la invitación?\\n"+options));
+    if (!selected || !mine[selected-1]) return;
+    await sendTransferRequest({type:"team_invitation",teamId:mine[selected-1].id,playerId});
+    alert("¡Invitación enviada!");
+  } catch(e) { alert(e.message || "No se pudo enviar la invitación."); }
 }
