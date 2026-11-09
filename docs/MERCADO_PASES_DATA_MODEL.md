@@ -47,3 +47,24 @@ Antes de publicar reglas definitivas:
 ## Compatibilidad
 
 Esta etapa no cambia el documento `tournaments`, la estructura de sus equipos ni la lógica actual de inscripción/inicio. La sincronización general de salas y estadísticas queda fuera de este primer corte.
+
+
+## Flujo implementado en esta rama
+
+1. El jugador publica su ficha o se genera/actualiza su perfil público al postularse.
+2. Un jugador puede enviar una postulación a un equipo activo.
+3. Un administrador/capitán puede invitar a un jugador que tenga perfil público.
+4. Las solicitudes aparecen en la pestaña **Solicitudes**, separadas por recibidas/enviadas y con estado.
+5. El destinatario puede aceptar o rechazar.
+6. La aceptación se procesa en una transacción: valida solicitud/equipo/membresía, crea o reactiva la membresía, registra historial, cambia el estado y genera notificación al remitente.
+7. El jugador conserva la posibilidad de pertenecer a más de un equipo. No se asigna equipo principal automáticamente.
+8. Se pueden crear equipos casuales; quedan identificados como `teamType: casual` y el creador figura como organizador.
+
+## Limitaciones pendientes
+
+- La pantalla usa diálogos simples del navegador para publicar; falta reemplazarlos por formularios visuales integrados.
+- No está implementado todavía el contacto por WhatsApp ni la preferencia de compartirlo.
+- No está implementada la transferencia de capitanía ni la baja voluntaria/expulsión con historial.
+- El archivo `firestore.rules` es candidato y no fue desplegado ni validado en Firebase Emulator Suite.
+- Las reglas existentes de `users` y `tournaments` se conservaron por compatibilidad y siguen necesitando endurecimiento.
+- La interfaz no debe considerarse lista para producción hasta probar el flujo con dos cuentas autenticadas y las reglas en emulador.
