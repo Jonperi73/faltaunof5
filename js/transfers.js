@@ -56,6 +56,7 @@ async function openTransferPublish() {
     const zone = prompt("¿En qué zona buscás equipo?", "La Plata");
     const description = prompt("Contá brevemente qué buscás (opcional):", "");
     try {
+      await savePublicPlayerProfile({username:currentUser,name:user.name || title,position,zone,description,lookingForTeam:true});
       await createTransferListing({kind:"player",title,position,zone,description});
       alert("¡Publicación creada!");
       transferTab = "players";
