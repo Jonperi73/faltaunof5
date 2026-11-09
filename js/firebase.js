@@ -158,11 +158,14 @@ Object.assign(window, {
   getMyTeams: async () => {
     const uid = uidNow();
     if (!uid) return [];
-    const snap = await getDocs(query(collection(db, "teams"), where("adminId", "==", uid)));
-    const captainSnap = await getDocs(query(collection(db, "teams"), where("captainId", "==", uid)));
-    const all = new Map();
-    [...snap.docs, ...captainSnap.docs].forEach(d => all.set(d.id, { id: d.id, ...d.data() }));
-    return [...all.values()];
+    const snap = await getDocs(query(collection(db, "teams"), where("status", "==", "active")));
+    const checks = await Promise.all(snap.docs.map(async d => {
+      const member = await getDoc(doc(db, "teams", d.id, "members", uid));
+      return member.exists() && member.data().status === "active"
+        ? { id: d.id, ...d.data(), myRole: member.data().role }
+        : null;
+    }));
+    return checks.filter(Boolean);
   },
   createTransferListing: async listing => {
     const uid = uidNow();
