@@ -67,7 +67,15 @@ async function openTransferPublish() {
     try {
       const teams = await getActiveTeams();
       const mine = teams.filter(t => t.adminId === firebaseAuth.currentUser.uid || t.captainId === firebaseAuth.currentUser.uid);
-      if (!mine.length) return alert("Primero tenés que crear un equipo permanente.");
+      if (!mine.length) {
+        const teamName = prompt("Todavía no tenés equipo. ¿Cómo se va a llamar?");
+        if (!teamName) return;
+        const zone = prompt("¿De qué zona es el equipo?", "La Plata");
+        const description = prompt("Descripción del equipo (opcional):", "");
+        await createPermanentTeam({name:teamName,zone,description});
+        alert("¡Equipo creado! Ahora publicá la búsqueda de refuerzos.");
+        return openTransferPublish();
+      }
       const options = mine.map((t,i)=>`${i+1} - ${t.name}`).join("\n");
       const selected = Number(prompt("Elegí el equipo:\n"+options));
       if (!selected || !mine[selected-1]) return;
