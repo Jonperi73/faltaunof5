@@ -17,7 +17,7 @@
 <link rel="stylesheet" href="./css/chat.css">
 <link rel="stylesheet" href="./css/ranking.css">
 <link rel="stylesheet" href="./css/profile.css">
-<link rel="stylesheet" href="./css/admin.css">
+<link rel="stylesheet" href="./css/admin.css">\n<link rel="stylesheet" href="./css/tournaments.css">
 <link rel="stylesheet" href="./css/responsive.css">
 </head>
 <body>
@@ -133,6 +133,7 @@
   <div class="bottomnav">
     <button class="nav-btn active" onclick="goTo('s-home')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>Inicio</button>
     <button class="nav-btn" onclick="goTo('s-create')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg>Crear</button>
+    <button class="nav-btn" onclick="goTo('s-tournaments')">🏆 Torneos</button>
     <button class="nav-btn" onclick="goTo('s-ranking')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>Ranking</button>
     <button class="nav-btn" onclick="goTo('s-profile')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>Perfil</button>
   </div>
@@ -188,6 +189,18 @@
     <div id="tab-detail-chat" style="display:none"></div>
     <div id="tab-detail-pagos" style="display:none"></div>
     <div id="tab-detail-historial" style="display:none"></div>
+  </div>
+</div>
+
+<!-- ===== TORNEOS ===== -->
+<div class="screen" id="s-tournaments">
+  <div class="topbar"><div class="topbar-title">🏆 Torneos</div><button class="btn btn-accent btn-sm" onclick="showTournamentCreate()">+ Crear</button></div>
+  <div class="scroll-content" style="padding-top:12px" id="tournaments-content"></div>
+  <div class="bottomnav">
+    <button class="nav-btn" onclick="goTo('s-home')">Inicio</button>
+    <button class="nav-btn active" onclick="goTo('s-tournaments')">🏆 Torneos</button>
+    <button class="nav-btn" onclick="goTo('s-ranking')">Ranking</button>
+    <button class="nav-btn" onclick="goTo('s-profile')">Perfil</button>
   </div>
 </div>
 
@@ -252,6 +265,7 @@
 <script src="./js/ranking.js"></script>
 <script src="./js/profile.js"></script>
 <script src="./js/admin.js"></script>
+<script src="./js/tournaments.js"></script>
 <script src="./js/app.js"></script>
 </body>
 </html>
