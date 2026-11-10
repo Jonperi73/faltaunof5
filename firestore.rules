@@ -6,10 +6,17 @@ service cloud.firestore {
       return request.auth != null;
     }
 
+    function teamExists(teamId) {
+      return exists(/databases/$(database)/documents/teams/$(teamId));
+    }
+
     function isTeamManager(teamId) {
       return signedIn()
-        && (get(/databases/$(database)/documents/teams/$(teamId)).data.adminId == request.auth.uid
-          || get(/databases/$(database)/documents/teams/$(teamId)).data.captainId == request.auth.uid);
+        && teamExists(teamId)
+        && (
+          get(/databases/$(database)/documents/teams/$(teamId)).data.adminId == request.auth.uid
+          || get(/databases/$(database)/documents/teams/$(teamId)).data.captainId == request.auth.uid
+        );
     }
 
     function validTransferRequestCreate() {
@@ -20,11 +27,13 @@ service cloud.firestore {
         && request.resource.data.status == 'pending'
         && request.resource.data.senderId == request.auth.uid
         && request.resource.data.type in ['team_invitation', 'player_application']
-        && exists(/databases/$(database)/documents/teams/$(request.resource.data.teamId))
+        && teamExists(request.resource.data.teamId)
+        && get(/databases/$(database)/documents/teams/$(request.resource.data.teamId)).data.status == 'active'
         && exists(/databases/$(database)/documents/player_profiles/$(request.resource.data.playerId))
         && (
           (request.resource.data.type == 'team_invitation'
             && isTeamManager(request.resource.data.teamId)
+            && request.resource.data.playerId != request.auth.uid
             && request.resource.data.recipientId == request.resource.data.playerId)
           ||
           (request.resource.data.type == 'player_application'
@@ -34,37 +43,36 @@ service cloud.firestore {
         );
     }
 
-    // Cuentas existentes. Se conserva compatibilidad con el cliente actual.
+    // Usuarios existentes.
     match /users/{userId} {
       allow read: if signedIn();
       allow create, update, delete: if signedIn() && request.auth.uid == userId;
     }
 
-    // Torneos existentes: se conserva temporalmente el comportamiento actual.
-    // Debe endurecerse en una etapa específica porque la app actual aún depende de él.
+    // Torneos existentes: se conserva el comportamiento actual.
     match /tournaments/{tournamentId} {
       allow read, create, update: if signedIn();
       allow delete: if false;
     }
 
-    // Perfil público del jugador. No guardar teléfono/WhatsApp aquí.
+    // Perfil público. Los datos de contacto privados nunca deben guardarse aquí.
     match /player_profiles/{userId} {
       allow read: if signedIn();
       allow create: if signedIn()
         && request.auth.uid == userId
         && request.resource.data.userId == userId
-        && !request.resource.data.keys().hasAny(['whatsapp', 'phone']);
+        && !request.resource.data.keys().hasAny(['whatsapp', 'phone', 'email']);
       allow update: if signedIn()
         && request.auth.uid == userId
         && request.resource.data.userId == userId
-        && !request.resource.data.diff(resource.data).affectedKeys().hasAny(['whatsapp', 'phone']);
+        && !request.resource.data.diff(resource.data).affectedKeys()
+          .hasAny(['whatsapp', 'phone', 'email']);
       allow delete: if signedIn() && request.auth.uid == userId;
     }
 
-    // Datos privados de contacto. El usuario sólo accede a su documento.
+    // Contacto privado: sólo el propio jugador puede acceder.
     match /player_private/{userId} {
-      allow read, create, update: if signedIn() && request.auth.uid == userId;
-      allow delete: if signedIn() && request.auth.uid == userId;
+      allow read, create, update, delete: if signedIn() && request.auth.uid == userId;
     }
 
     match /teams/{teamId} {
@@ -83,6 +91,7 @@ service cloud.firestore {
 
       match /members/{memberId} {
         allow read: if signedIn();
+        // Alta inicial del creador o incorporación respaldada por una solicitud aceptada.
         allow create: if signedIn() && (
           (memberId == request.auth.uid
             && request.resource.data.userId == memberId
@@ -94,14 +103,15 @@ service cloud.firestore {
             && request.resource.data.userId == memberId
             && existsAfter(/databases/$(database)/documents/transfer_requests/$(request.resource.data.requestId))
             && getAfter(/databases/$(database)/documents/transfer_requests/$(request.resource.data.requestId)).data.status == 'accepted'
+            && getAfter(/databases/$(database)/documents/transfer_requests/$(request.resource.data.requestId)).data.respondedBy == request.auth.uid
             && getAfter(/databases/$(database)/documents/transfer_requests/$(request.resource.data.requestId)).data.teamId == teamId
             && getAfter(/databases/$(database)/documents/transfer_requests/$(request.resource.data.requestId)).data.playerId == memberId)
         );
-        allow update: if signedIn() && (
-          memberId == request.auth.uid
-          || isTeamManager(teamId)
-        );
-        allow delete: if signedIn() && (memberId == request.auth.uid || isTeamManager(teamId));
+        // Sólo responsables del equipo pueden cambiar roles o estado de integrantes.
+        allow update: if isTeamManager(teamId)
+          && request.resource.data.userId == resource.data.userId;
+        allow delete: if signedIn()
+          && (memberId == request.auth.uid || isTeamManager(teamId));
       }
     }
 
@@ -120,7 +130,10 @@ service cloud.firestore {
         );
       allow update: if signedIn()
         && resource.data.ownerId == request.auth.uid
-        && request.resource.data.ownerId == resource.data.ownerId;
+        && request.resource.data.ownerId == resource.data.ownerId
+        && request.resource.data.kind == resource.data.kind
+        && request.resource.data.teamId == resource.data.teamId
+        && request.resource.data.playerId == resource.data.playerId;
       allow delete: if signedIn() && resource.data.ownerId == request.auth.uid;
     }
 
@@ -152,6 +165,7 @@ service cloud.firestore {
       allow create: if signedIn()
         && existsAfter(/databases/$(database)/documents/transfer_requests/$(request.resource.data.requestId))
         && getAfter(/databases/$(database)/documents/transfer_requests/$(request.resource.data.requestId)).data.status == 'accepted'
+        && getAfter(/databases/$(database)/documents/transfer_requests/$(request.resource.data.requestId)).data.respondedBy == request.auth.uid
         && getAfter(/databases/$(database)/documents/transfer_requests/$(request.resource.data.requestId)).data.teamId == request.resource.data.teamId
         && getAfter(/databases/$(database)/documents/transfer_requests/$(request.resource.data.requestId)).data.playerId == request.resource.data.userId;
       allow update, delete: if false;
@@ -160,8 +174,12 @@ service cloud.firestore {
     match /notifications/{notificationId} {
       allow read: if signedIn() && resource.data.userId == request.auth.uid;
       allow create: if signedIn()
+        && request.resource.data.keys().hasOnly([
+          'userId', 'type', 'title', 'message', 'relatedId', 'read', 'createdAt'
+        ])
         && request.resource.data.userId is string
         && request.resource.data.relatedId is string
+        && request.resource.data.read == false
         && existsAfter(/databases/$(database)/documents/transfer_requests/$(request.resource.data.relatedId))
         && (
           (getAfter(/databases/$(database)/documents/transfer_requests/$(request.resource.data.relatedId)).data.status == 'pending'
@@ -179,7 +197,7 @@ service cloud.firestore {
       allow delete: if false;
     }
 
-    // Bloqueo por defecto para toda colección no declarada.
+    // Todo lo que no está declarado arriba queda bloqueado.
     match /{document=**} {
       allow read, write: if false;
     }
